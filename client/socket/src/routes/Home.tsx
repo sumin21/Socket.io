@@ -1,18 +1,29 @@
 import React, { useEffect, useState } from "react";
 
-import io from "socket.io-client";
+import { io } from "socket.io-client";
 import styled from "styled-components";
 
 const AppCss = styled.div`
   background-color: #e59999;
 `;
 
-const socket = io("http://localhost:5000");
+const socket = io("ws://localhost:5000/", {});
 
+socket.on("connect", () => {
+  console.log(`connect ${socket.id}`);
+});
+
+// console.log("11", socket.id);
+// socket.on("connection", () => {
+//   console.log("ss", socket.id);
+// });
 const Home = () => {
   // 빈배열 넣음으로 -> 새로고침 시에만 재적용
   useEffect(() => {
     console.log("접속");
+    socket.on("reply", (data: string) => {
+      console.log("reply", data);
+    });
   }, []);
 
   const [name, setName] = useState("");
@@ -32,6 +43,7 @@ const Home = () => {
       content,
     };
     console.log(obj);
+    socket.emit("hello", "hello~");
   };
 
   return (
