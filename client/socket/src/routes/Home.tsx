@@ -21,9 +21,6 @@ const Home = () => {
   // 빈배열 넣음으로 -> 새로고침 시에만 재적용
   useEffect(() => {
     console.log("접속");
-    socket.on("reply", (data: string) => {
-      console.log("reply", data);
-    });
   }, []);
 
   const [name, setName] = useState("");
@@ -43,7 +40,7 @@ const Home = () => {
       content,
     };
     console.log(obj);
-    socket.emit("hello", "hello~");
+    socket.emit("message", "hello~");
   };
 
   return (

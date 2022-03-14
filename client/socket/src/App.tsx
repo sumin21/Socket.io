@@ -1,4 +1,7 @@
+import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
+
 import Home from "./routes/Home";
+import Login from "./routes/Login";
 import { createGlobalStyle } from "styled-components";
 
 const GlobalStyle = createGlobalStyle`
@@ -30,7 +33,10 @@ const App: React.FC = () => {
   return (
     <>
       <GlobalStyle />
-      <Home />
+      <Switch>
+        <Route exact path="/" component={Home} />
+        <Route exact path="/login" component={Login} />
+      </Switch>
     </>
   );
 };
