@@ -37,7 +37,12 @@ io.on("connection", (socket) => {
   });
   
 });
+const cors = require("cors");
 
+app.use(cors());
+// app.use((req, res) => {
+// 	res.header("Access-Control-Allow-Origin", "*");
+// });
 //application/x-www-form-urlencoded 데이터를 분석해서 가져옴
 app.use(bodyParser.urlencoded({extended: true}));
 //application.json 을 분석해서 가져옴

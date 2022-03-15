@@ -1,5 +1,6 @@
 import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 
+import Auth from "./hoc/auth";
 import Home from "./routes/Home";
 import Login from "./routes/Login";
 import { createGlobalStyle } from "styled-components";
@@ -30,12 +31,15 @@ time, mark, audio, video {
 }
 `;
 const App: React.FC = () => {
+  const newHomePage = Auth(Home, true);
+  const newLoginPage = Auth(Login, false);
+
   return (
     <>
       <GlobalStyle />
       <Switch>
-        <Route exact path="/" component={Home} />
-        <Route exact path="/login" component={Login} />
+        <Route exact path="/" component={newHomePage} />
+        <Route exact path="/login" component={newLoginPage} />
       </Switch>
     </>
   );

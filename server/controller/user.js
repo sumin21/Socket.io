@@ -75,7 +75,8 @@ module.exports = {
         //role:1,2.... -> 관리자
         res.status(200).json({
             id: user.id,
-            name: user.name
+            name: user.name,
+            isAuth: true
         });
     },
     logoutUser: (req, res) => {
