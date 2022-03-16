@@ -29,6 +29,9 @@ time, mark, audio, video {
 * {
   margin: 0;
 }
+a{
+  text-decoration:none !important;
+}
 `;
 const App: React.FC = () => {
   const newHomePage = Auth(Home, true);

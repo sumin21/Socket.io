@@ -1,8 +1,102 @@
+import "bootstrap/dist/css/bootstrap.min.css";
+
 import React, { useState } from "react";
 
 import Axios from "axios";
+import { createGlobalStyle } from "styled-components";
 import { io } from "socket.io-client";
+import styled from "styled-components";
 import { useHistory } from "react-router-dom";
+
+const LandingCss = styled.div`
+  width: 100%;
+  height: 100%;
+  padding-top: 4.2rem;
+  padding-bottom: 4.2rem;
+  background-color: #fafafa;
+  /* background-image: url('../../../../images/loginpageimg.png'); */
+  background-repeat: no-repeat;
+  background-size: cover;
+`;
+
+const LandingMargin = styled.div`
+  margin-top: 4.2rem;
+`;
+
+const MyForm = styled.div`
+  position: relative;
+  display: -ms-flexbox;
+  display: flex;
+  padding: 1rem;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  width: 100%;
+  pointer-events: auto;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  outline: 0;
+  max-width: 400px;
+`;
+
+const NameBox = styled.div`
+  margin-right: 2rem;
+  margin-left: 2rem;
+`;
+
+const PasswordBox = styled.div`
+  margin-right: 2rem;
+  margin-left: 2rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+`;
+
+const LoginText = styled.h1`
+  margin-top: 2rem;
+  margin-bottom: 0;
+`;
+
+const Txt = styled.label`
+  font-size: 13px;
+`;
+
+const LoginBtnBox = styled.div`
+  margin-right: 2.5rem;
+  margin-left: 2.5rem;
+  width: auto;
+  margin-top: 2rem;
+`;
+
+const LoginBtn = styled.button`
+  padding: 0.4rem;
+  width: 100%;
+`;
+
+const LoginOr = styled.div`
+  position: relative;
+  color: #aaa;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+`;
+
+const SpanOr = styled.span`
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  margin-left: -25px;
+  background-color: #fff;
+  width: 50px;
+  text-align: center;
+`;
+
+const HrOr = styled.hr`
+  height: 1px;
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+`;
 
 const Login = () => {
   const history = useHistory();
@@ -43,20 +137,20 @@ const Login = () => {
   };
 
   return (
-    <div className="landing-page">
-      <div className="container landing-page-margin">
+    <LandingCss>
+      <LandingMargin className="container">
         <div className="row">
           <div className="col-md-5 mx-auto">
-            <div id="first" className="display-class">
-              <div className="myform form ">
+            <div id="first">
+              <MyForm className="form">
                 <div className="logo mb-3">
                   <div className="col-md-12 text-center">
-                    <h1 className="login-text">Studeet</h1>
+                    <LoginText>Socket Chat</LoginText>
                   </div>
                 </div>
                 <form action="" method="post" name="login">
-                  <div className="form-group name-box">
-                    <label className="name-text">Name</label>
+                  <NameBox className="form-group">
+                    <Txt>Name</Txt>
                     <input
                       type="email"
                       name="email"
@@ -67,9 +161,9 @@ const Login = () => {
                       value={Name}
                       onChange={onNameHandler}
                     />
-                  </div>
-                  <div className="form-group password-box">
-                    <label className="password-text">Password</label>
+                  </NameBox>
+                  <PasswordBox className="form-group">
+                    <Txt>Password</Txt>
                     <input
                       type="password"
                       name="password"
@@ -80,21 +174,21 @@ const Login = () => {
                       value={Password}
                       onChange={onPasswordHandler}
                     />
-                  </div>
-                  <div className="login-btn-box col-md-12 text-center ">
-                    <button
+                  </PasswordBox>
+                  <LoginBtnBox className="col-md-12 text-center ">
+                    <LoginBtn
                       type="submit"
-                      className=" login-btn btn btn-block btn-primary tx-tfm"
+                      className="btn btn-block btn-primary tx-tfm"
                       onClick={chatBtnClick}
                     >
                       로그인
-                    </button>
-                  </div>
+                    </LoginBtn>
+                  </LoginBtnBox>
                   <div className="col-md-12 ">
-                    <div className="login-or">
-                      <hr className="hr-or" />
-                      <span className="span-or">or</span>
-                    </div>
+                    <LoginOr>
+                      <HrOr></HrOr>
+                      <SpanOr>or</SpanOr>
+                    </LoginOr>
                   </div>
                   <div className="register-btn-box col-md-12 text-center ">
                     <div className=" register-btn btn btn-block btn-outline-secondary">
@@ -107,12 +201,12 @@ const Login = () => {
                     </p>
                   </div>
                 </form>
-              </div>
+              </MyForm>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </LandingMargin>
+    </LandingCss>
   );
 };
 export default Login;

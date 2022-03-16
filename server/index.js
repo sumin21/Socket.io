@@ -25,13 +25,54 @@ const io = new Server(httpServer, {
   }
 });
 
+let room = ['room1', 'room2'];
 
-io.on("connection", (socket) => {
-  console.log('13', socket.id);
-  socket.on('message',(messageobject)=>{
-    console.log(messageobject);
-    io.emit('send message',messageobject);
+const namespace1 = io.of('/namespace1');
+
+namespace1.on("connection", (socket) => {
+  console.log('namespace1', socket.id);
+
+  // 방 나감 (방번호, 이름) 0/1
+  socket.on('leaveRoom', (num, name) => {
+    socket.leave(room[num], () => {
+      console.log(name + ' leave a ' + room[num]);
+      namespace1.to(room[num]).emit('leaveRoom', num, name);
+    });
   });
+
+  socket.on('joinRoom', (num, name) => {
+    socket.join(room[num], () => {
+      console.log(name + ' join a ' + room[num]);
+      namespace1.to(room[num]).emit('joinRoom', num, name);
+    });
+  });
+
+
+  socket.on('message', (num, name, msg) => {
+    console.log(msg);
+    namespace1.to(room[num]).emit('send message', name, msg);
+  });
+
+  socket.on("disconnect", (reason) => {
+    console.log('disconnection');
+  });
+  
+});
+
+
+
+
+
+
+
+
+
+
+const namespace2 = io.of('/namespace2');
+
+namespace2.on("connection", (socket) => {
+  console.log('namespace2', socket.id);
+  socket.emit('namespace2 send message');
   socket.on("disconnect", (reason) => {
     console.log('disconnection');
   });
