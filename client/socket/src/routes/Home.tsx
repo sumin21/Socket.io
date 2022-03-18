@@ -51,8 +51,10 @@ const ChatInputBox = styled.input`
   margin-right: 1rem;
 `;
 
-const ChatInputs = styled.div`
+const ChatInputs = styled.div<{ active?: boolean }>`
   display: flex;
+  margin-top: 1rem;
+  display: ${(props) => (props.active ? "border" : "none")};
 `;
 
 const SendBtn = styled.button`
@@ -85,38 +87,20 @@ const Chat = styled.div`
   margin-top: 1rem;
 `;
 
-//새로고침 -> 새로 연결 (이슈)
-const socket: any = io("ws://localhost:5000/namespace1", {});
-socket.on("connect", () => {
-  console.log(`connect ${socket.id}`);
-});
+const ChatStart = styled.div`
+  background-color: #ebc6c7;
+  border-radius: 20px;
+  margin-top: 1rem;
+  cursor: pointer;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+  font-weight: bold;
+  color: #e69999;
+`;
 
-socket.emit("joinRoom", 0, "이수민");
-
-socket.on("connect_error", () => {
-  setTimeout(() => {
-    socket.connect();
-  }, 1000);
-});
-
-socket.on("leaveRoom", (num: number, name: string) => {
-  console.log(`leaveRoom!`, num, name);
-});
-
-socket.on("joinRoom", (num: number, name: string) => {
-  console.log(`joinRoom!`, num, name);
-});
-
-socket.on("send message", (name: string, msg: string) => {
-  console.log(`send message!`, name, msg);
-});
-// console.log("11", socket.id);
-// socket.on("connection", () => {
-//   console.log("ss", socket.id);
-// });
+let socket: any = null;
 const Home = (props: any) => {
   const history = useHistory();
-
   // 빈배열 넣음으로 -> 새로고침 시에만 재적용
   useEffect(() => {
     console.log("접속");
@@ -124,6 +108,12 @@ const Home = (props: any) => {
 
   const [content, setContent] = useState("");
   const [codes, setCodes] = useState("");
+  const [displayClass, setDisplayClass]: [
+    displayClass: boolean,
+    setDisplayClass: (x: any) => void
+  ] = useState(false);
+
+  const [chatStartTxt, setchatStartTxt] = useState("채팅 시작하기");
 
   const onContentHandler = (event: any) => {
     setContent(event.currentTarget.value);
@@ -144,6 +134,45 @@ const Home = (props: any) => {
     console.log(codes);
   };
 
+  const startClickHandler: any = () => {
+    console.log("클릭");
+    if (!displayClass) {
+      setDisplayClass(true);
+      setchatStartTxt("채팅 그만하기");
+      //새로고침 -> 새로 연결 (이슈)
+      socket = io("ws://localhost:5000/", {});
+      socket.on("connect", () => {
+        console.log(`connect ${socket.id}`);
+      });
+
+      socket.on("connect_error", () => {
+        setTimeout(() => {
+          socket.connect();
+        }, 1000);
+      });
+
+      socket.on("leaveRoom", (num: number, name: string) => {
+        console.log(`leaveRoom!`, num, name);
+      });
+
+      socket.on("joinRoom", (num: number, name: string) => {
+        console.log(`joinRoom!`, num, name);
+      });
+
+      // sender & receiver message
+      socket.on("send message", (name: string, msg: string) => {
+        console.log(`send message!`, name, msg);
+      });
+
+      socket.emit("joinRoom", 0, "이수민");
+    } else {
+      setDisplayClass(false);
+      setchatStartTxt("채팅 시작하기");
+      console.log("그만");
+      socket.emit("leaveRoom", 0, "이수민");
+    }
+  };
+
   const onClickHandler = () => {
     axios.get(`/api/users/logout`).then((response) => {
       if (response.data.success) {
@@ -162,7 +191,8 @@ const Home = (props: any) => {
           <div className="col-md-9 mx-auto">
             <MyForm className="form">
               <ChatTitle>Simple Chat</ChatTitle>
-              <ChatInputs>
+              <ChatStart onClick={startClickHandler}>{chatStartTxt}</ChatStart>
+              <ChatInputs active={displayClass}>
                 <ChatInputBox
                   type="email"
                   name="email"

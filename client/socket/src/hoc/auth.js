@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 
 import Axios from 'axios';
+import Home from "../routes/Home";
+import Login from "../routes/Login";
 import { useHistory } from 'react-router-dom';
 
 // import LandingPage from '../components/views/LandingPage/LandingPage';
@@ -18,35 +20,40 @@ function Auth(SpecificComponent, option, adminRoute = null) {
     //false   =>  로그인한 유저는 출입 불가능한 페이지
     function AuthenticationCheck(props) {
 
-        useEffect(() => {
+        
             Axios.get('/api/users/auth')//
             .then(function (response) {
                 console.log(response.data.isAuth);
                 //로그인 안한 상태
                 if (!response.data.isAuth) {
                     if (option) {
+                        console.log('로그인 안한 유저는 출입금지');
                         history.push('/login');
+                        SpecificComponent = Login
+                        
                     }
                 }else {
                     //로그인 한 상태 
                     if (adminRoute && !response.data.isAdmin) {
                         history.push('/');
+                        SpecificComponent = Home
                     } else {
                         if (option === false) {
                             console.log('로그인한 유저는 출입금지');
                             history.push('/');
+                            SpecificComponent = Home
                         }
                     }
                 }
+        
             })
             .catch(function (error) {
                 console.log(error);
             });
-        }, [])
-
         return (
-            <SpecificComponent />
-        )
+                    <SpecificComponent />
+                )
+
     }
     return AuthenticationCheck
     
