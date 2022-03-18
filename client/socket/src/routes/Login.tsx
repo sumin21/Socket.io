@@ -126,9 +126,14 @@ const Login = () => {
         console.log(response.data.login);
         //페이지 이동
         if (response.data.login) {
-          // const so : propsState = 'kk';
-
-          history.push("/");
+          const userName: string = response.data.name;
+          console.log(userName);
+          history.push({
+            pathname: "/",
+            state: {
+              userName: userName,
+            },
+          });
         }
       })
       .catch(function (error) {

@@ -42,6 +42,7 @@ module.exports = {
                     if(err) return res.status(400).send(err);
                     console.log('token created');          
                     res.cookie("x_auth", userToken).status(200).json({
+                        name: param[0],
                         login: true,
                         token: userToken
                     });
