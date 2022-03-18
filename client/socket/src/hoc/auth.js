@@ -29,8 +29,6 @@ function Auth(SpecificComponent, option, adminRoute = null) {
                     if (option) {
                         console.log('로그인 안한 유저는 출입금지');
                         history.push('/login');
-                        SpecificComponent = Login
-                        
                     }
                 }else {
                     //로그인 한 상태 
@@ -41,7 +39,6 @@ function Auth(SpecificComponent, option, adminRoute = null) {
                         if (option === false) {
                             console.log('로그인한 유저는 출입금지');
                             history.push('/');
-                            SpecificComponent = Home
                         }
                     }
                 }
@@ -51,7 +48,7 @@ function Auth(SpecificComponent, option, adminRoute = null) {
                 console.log(error);
             });
         return (
-                    <SpecificComponent />
+                <SpecificComponent />
                 )
 
     }

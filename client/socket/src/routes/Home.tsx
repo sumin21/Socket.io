@@ -128,10 +128,10 @@ const Home = (props: any) => {
 
     // num. name. msg
     socket.emit("message", 0, "이수민", message);
-    let newCode = codes + `<div class="senderChat">${message.content}</div>`;
-    setCodes(newCode);
-    setContent("");
-    console.log(codes);
+    // let newCode = codes + `<div class="senderChat">${message.content}</div>`;
+    // setCodes(newCode);
+    // setContent("");
+    // console.log(codes);
   };
 
   const startClickHandler: any = () => {
@@ -145,24 +145,11 @@ const Home = (props: any) => {
         console.log(`connect ${socket.id}`);
       });
 
-      socket.on("connect_error", () => {
-        setTimeout(() => {
-          socket.connect();
-        }, 1000);
-      });
-
-      socket.on("leaveRoom", (num: number, name: string) => {
-        console.log(`leaveRoom!`, num, name);
-      });
-
-      socket.on("joinRoom", (num: number, name: string) => {
-        console.log(`joinRoom!`, num, name);
-      });
-
-      // sender & receiver message
-      socket.on("send message", (name: string, msg: string) => {
-        console.log(`send message!`, name, msg);
-      });
+      // socket.on("connect_error", () => {
+      //   setTimeout(() => {
+      //     socket.connect();
+      //   }, 1000);
+      // });
 
       socket.emit("joinRoom", 0, "이수민");
     } else {
@@ -172,6 +159,33 @@ const Home = (props: any) => {
       socket.emit("leaveRoom", 0, "이수민");
     }
   };
+
+  if (socket) {
+    socket.on("leaveRoom", (num: number, name: string) => {
+      console.log(`leaveRoom!`, num, name);
+    });
+
+    socket.on("joinRoom", (num: number, name: string) => {
+      console.log(`joinRoom!`, num, name);
+    });
+
+    // sender & receiver message
+    socket.on(
+      "send message",
+      (name: string, msg: { content: string; sender: string }) => {
+        console.log(`send message!`, name, msg);
+        let messages = {
+          message: msg.content,
+          sender: msg.sender,
+        };
+
+        let newCode =
+          codes + `<div class="senderChat">${messages.message}</div>`;
+        setCodes(newCode);
+        setContent("");
+      }
+    );
+  }
 
   const onClickHandler = () => {
     axios.get(`/api/users/logout`).then((response) => {
@@ -191,7 +205,9 @@ const Home = (props: any) => {
           <div className="col-md-9 mx-auto">
             <MyForm className="form">
               <ChatTitle>Simple Chat</ChatTitle>
-              <ChatStart onClick={startClickHandler}>{chatStartTxt}</ChatStart>
+              <ChatStart onClick={() => startClickHandler()}>
+                {chatStartTxt}
+              </ChatStart>
               <ChatInputs active={displayClass}>
                 <ChatInputBox
                   type="email"

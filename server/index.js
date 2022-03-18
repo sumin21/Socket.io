@@ -30,28 +30,24 @@ let room = ['room1', 'room2'];
 
 io.on("connection", (socket) => {
   console.log('namespace1', socket.id);
+  // console.log('namespace1 room', socket.rooms);
 
   // 방 나감 (방번호, 이름) 0/1
   socket.on('leaveRoom', (num, name) => {
-    socket.leave(room[num], () => {
-      console.log(name + ' leave a ' + room[num]);
-      io.to(room[num]).emit('leaveRoom', num, name);
-    });
+    socket.leave('room1');
+    io.to('room1').emit('leaveRoom', num, name);
   });
 
   socket.on('joinRoom', (num, name) => {
     console.log('join', num, name);
-    socket.join(room[num], (err) => {
-      console.log(err);
-      console.log(name + ' join a ' + room[num]);
-      io.to(room[num]).emit('joinRoom', num, name);
-    });
+    socket.join('room1');
+    io.to('room1').emit('joinRoom', num, name);
   });
 
 
   socket.on('message', (num, name, msg) => {
     console.log(msg);
-    io.to(room[num]).emit('send message', name, msg);
+    io.to('room1').emit('send message', name, msg);
   });
 
   socket.on("disconnect", (reason) => {
