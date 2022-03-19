@@ -1,9 +1,10 @@
 import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
+import styled, { createGlobalStyle } from "styled-components";
 
 import Auth from "./hoc/auth";
 import Home from "./routes/Home";
 import Login from "./routes/Login";
-import { createGlobalStyle } from "styled-components";
+import Rooms from "./routes/Rooms";
 
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css2?family=Dongle:wght@300&display=swap');
@@ -33,17 +34,70 @@ a{
   text-decoration:none !important;
 }
 `;
+
+const LoginCss = styled.div`
+  width: 100%;
+  height: 100%;
+  padding-top: 4.2rem;
+  padding-bottom: 4.2rem;
+  /* background-image: url('../../../../images/loginpageimg.png'); */
+  background-repeat: no-repeat;
+  background-size: cover;
+`;
+
+const LoginMargin = styled.div`
+  margin-top: 4.2rem;
+  max-width: 500px;
+`;
+
+const MyForm = styled.div`
+  position: relative;
+  display: -ms-flexbox;
+  display: flex;
+  padding: 3rem;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  width: 100%;
+  pointer-events: auto;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  outline: 0;
+  /* max-width: 600px; */
+  min-width: 300px;
+  background-color: #e59999;
+  text-align: center;
+`;
+
+const ChatTitle = styled.h1`
+  font-weight: 900;
+  color: white;
+  margin-bottom: 2rem;
+`;
+
 const App: React.FC = () => {
   const newHomePage = Auth(Home, true);
   const newLoginPage = Auth(Login, false);
+  const newRoomsPage = Auth(Rooms, true);
 
   return (
     <>
       <GlobalStyle />
-      <Switch>
-        <Route exact path="/" component={newHomePage} />
-        <Route exact path="/login" component={newLoginPage} />
-      </Switch>
+      <LoginCss>
+        <LoginMargin className="container">
+          <div className="row">
+            <div>
+              <MyForm className="form">
+                <ChatTitle>Socket Chat</ChatTitle>
+                <Switch>
+                  <Route exact path="/" component={newHomePage} />
+                  <Route exact path="/login" component={newLoginPage} />
+                  <Route exact path="/rooms" component={newRoomsPage} />
+                </Switch>
+              </MyForm>
+            </div>
+          </div>
+        </LoginMargin>
+      </LoginCss>
     </>
   );
 };

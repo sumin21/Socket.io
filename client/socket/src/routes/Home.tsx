@@ -2,9 +2,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./Home.css";
 
 import React, { useEffect, useState } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { Route, Switch, useHistory, useLocation } from "react-router-dom";
 
 import Button from "react-bootstrap/Button";
+import Rooms from "./Rooms";
 import axios from "axios";
 import { io } from "socket.io-client";
 import styled from "styled-components";
@@ -137,15 +138,12 @@ const Home = (props: any) => {
     };
     console.log(message);
 
-    // num. name. msg
-    socket.emit("message", 0, userName, message);
-    // let newCode = codes + `<div class="senderChat">${message.content}</div>`;
-    // setCodes(newCode);
-    setContent("");
-    // console.log(codes);
+    if (message.content != "") {
+      socket.emit("message", 0, userName, message);
+      setContent("");
+    }
   };
 
-  let chat: boolean = true;
   const startClickHandler: any = () => {
     console.log("클릭");
     if (!displayClass) {
@@ -254,60 +252,47 @@ const Home = (props: any) => {
   };
 
   return (
-    <LoginCss>
-      <LoginMargin className="container">
-        <div className="row">
-          <div className="col-md-9 mx-auto">
-            <MyForm className="form">
-              <ChatTitle>Simple Chat</ChatTitle>
-              <ChatStart
-                onClick={() => {
-                  startClickHandler();
-                  socketHandler();
-                }}
-              >
-                {chatStartTxt}
-              </ChatStart>
-              <ChatInputs active={displayClass}>
-                <ChatInputBox
-                  type="email"
-                  name="email"
-                  className="form-control"
-                  id="chat-content"
-                  aria-describedby="emailHelp"
-                  placeholder="content"
-                  value={content}
-                  onChange={onContentHandler}
-                />
-                <SendBtn
-                  type="button"
-                  className="btn btn-warning"
-                  onClick={() => handleClick(1)}
-                >
-                  전송
-                </SendBtn>
-              </ChatInputs>
-              <LogoutBox>
-                <LogoutBtn
-                  type="button"
-                  className="btn btn"
-                  onClick={onClickHandler}
-                >
-                  로그아웃
-                </LogoutBtn>
-              </LogoutBox>
-              <HrCss />
-              <Chat>
-                <div
-                  className="chats"
-                  dangerouslySetInnerHTML={{ __html: codes }}
-                ></div>
-              </Chat>
-            </MyForm>
-          </div>
-        </div>
-      </LoginMargin>
-    </LoginCss>
+    <div>
+      <ChatStart
+        onClick={() => {
+          startClickHandler();
+          socketHandler();
+        }}
+      >
+        {chatStartTxt}
+      </ChatStart>
+      <ChatInputs active={displayClass}>
+        <ChatInputBox
+          type="email"
+          name="email"
+          className="form-control"
+          id="chat-content"
+          aria-describedby="emailHelp"
+          placeholder="content"
+          value={content}
+          onChange={onContentHandler}
+        />
+        <SendBtn
+          type="button"
+          className="btn btn-warning"
+          onClick={() => handleClick(1)}
+        >
+          전송
+        </SendBtn>
+      </ChatInputs>
+      <LogoutBox>
+        <LogoutBtn type="button" className="btn btn" onClick={onClickHandler}>
+          로그아웃
+        </LogoutBtn>
+      </LogoutBox>
+      <HrCss />
+      <Chat>
+        <div
+          className="chats"
+          dangerouslySetInnerHTML={{ __html: codes }}
+        ></div>
+      </Chat>
+    </div>
   );
 };
 export default Home;

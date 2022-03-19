@@ -32,13 +32,14 @@ function Auth(SpecificComponent, option, adminRoute = null) {
                     }
                 }else {
                     //로그인 한 상태 
-                    if (adminRoute && !response.data.isAdmin) {
-                        history.push('/');
-                        SpecificComponent = Home
+                    if (adminRoute) {
+                        // history.push('/');
+                        // SpecificComponent = Home
                     } else {
                         if (option === false) {
                             console.log('로그인한 유저는 출입금지');
-                            history.push('/');
+                            history.push('/')
+                            // history.go(-1);
                         }
                     }
                 }

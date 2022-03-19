@@ -34,8 +34,9 @@ io.on("connection", (socket) => {
 
   // 방 나감 (방번호, 이름) 0/1
   socket.on('leaveRoom', (num, name) => {
-    socket.leave('room1');
+    console.log('leave', num, name);
     io.to('room1').emit('leaveRoom', num, name);
+    socket.leave('room1');
   });
 
   socket.on('joinRoom', (num, name) => {
@@ -55,11 +56,6 @@ io.on("connection", (socket) => {
   });
   
 });
-
-
-
-
-
 
 
 
