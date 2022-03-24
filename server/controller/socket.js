@@ -10,7 +10,8 @@ module.exports = {
         //room 정보와 유저id를 전달하면 이를 받아 db에 넣어줌
         console.log("🚀 ~ req.body", req.body)
         //userId : auth server에서 받아옴 (client)
-        const param = [req.body.title, req.body.location, req.body.maxNumber, req.body.userId]
+        let userId = req.user.id;
+        const param = [req.body.title, req.body.location, req.body.maxNumber, userId]
         const time = new Date().toISOString().slice(0, 19).replace('T', ' ');
         mql.query('SELECT * FROM chatrooms WHERE title=?', param[0], (err,row) => {
             if(err) return res.json({
@@ -19,31 +20,32 @@ module.exports = {
             });//row 있음 -> 중복 room o -> 생성불가능
             else if(row.length > 0){
                 return res.json({
-                    success: true,
+                    success: false,
                     error: '해당 room이 이미 존재합니다. (title 중복)'
                 });
-            };
+            }
             //row 없음 -> 중복 room x -> 생성가능
-            
-            mql.query('INSERT INTO chatrooms(`title`, `location`, `maxNumber`, `lastChatTime`) VALUES (?,?,?,?)', [param[0],param[1],param[2],time], (err, result) => {
-                if(err) return res.json({
-                    success: false, 
-                    error: err
-                })
-                // return res.json({success: true})
-                console.log('insertId', result.insertId);
-                const chatroomId = result.insertId;
-                mql.query('INSERT INTO members(`chatroomsId`, `userId`) VALUES (?,?)', [chatroomId, param[3]], (err, row) => {
+            else{
+                mql.query('INSERT INTO chatrooms(`title`, `location`, `maxNumber`, `lastChatTime`) VALUES (?,?,?,?)', [param[0],param[1],param[2],time], (err, result) => {
                     if(err) return res.json({
                         success: false, 
                         error: err
-                    });
-                    return res.json({
-                        success: true, 
-                        chatroomid: chatroomId
-                    });
+                    })
+                    // return res.json({success: true})
+                    console.log('insertId', result.insertId);
+                    const chatroomId = result.insertId;
+                    mql.query('INSERT INTO members(`chatroomsId`, `userId`) VALUES (?,?)', [chatroomId, param[3]], (err, row) => {
+                        if(err) return res.json({
+                            success: false, 
+                            error: err
+                        });
+                        return res.json({
+                            success: true, 
+                            chatroomid: chatroomId
+                        });
+                    })
                 })
-            })
+            }
         });
         
     },
@@ -68,7 +70,8 @@ module.exports = {
     joinRoom: (req, res) =>{
         //roomId, userId -> members db에 추가
         console.log("🚀 ~ req.body", req.body)
-        const param = [req.body.roomId, req.body.userId]
+        let userId = req.user.id;
+        const param = [req.body.roomId, userId]
         mql.query('SELECT * FROM chatrooms WHERE id=?', param[0], (err,row) => {
             if(err) return res.json({
                 success: false,
@@ -79,69 +82,150 @@ module.exports = {
                     success: false,
                     error: 'roomId에 해당하는 room이 존재하지 않습니다.'
                 });
-            };
-            mql.query('SELECT * FROM members WHERE chatroomsId=?', param[0], (err,row) => {
-                if(err) return res.json({
-                    success: false,
-                    error: err
-                });//row 있음 -> 중복 room o -> 생성불가능
-                else if(row.length == 0){
-                    return res.json({
-                        success: false,
-                        error: 'roomId에 참여중인 member가 존재하지 않습니다.'
-                    });
-                };
-
-                mql.query('INSERT INTO members(`chatroomsId`, `userId`) VALUES (?,?)', param, (err,row) => {
+            }
+            else {
+                mql.query('SELECT * FROM members WHERE chatroomsId=?', param[0], (err,row) => {
                     if(err) return res.json({
                         success: false,
                         error: err
-                    });
-                    return res.json({
-                        success: true
-                    });
+                    });//row 있음 -> 중복 room o -> 생성불가능
+                    
+                    else if(row.length == 0){
+                        return res.json({
+                            success: false,
+                            error: 'roomId에 참여중인 member가 존재하지 않습니다.'
+                        });
+                    }
+                    else {
+                        // (chatroomsId, userId) 쌍 중복 x -> err (db)
+                        mql.query('INSERT INTO members(`chatroomsId`, `userId`) VALUES (?,?)', param, (err,row) => {
+                            if(err) return res.json({
+                                success: false,
+                                error: err
+                            });
+                            return res.json({
+                                success: true
+                            });
+                        });
+                    }
                 });
-            })
+            }
         }) 
     },
     //post
-    joinMemberAuth: (req, res) =>{
-        //auth
+    memberAuth: (req, res) =>{
+        //auth (server -> client에게 userId 전달 -> server에게 재전달)
+        // (client) userId + roomId -> (server) 해당 room에 user가 접속 중인지
         console.log("🚀 ~ req.body", req.body)
-        const param = [req.body.roomId, req.body.userId]
+        let userId = req.user.id;
+        const param = [req.body.roomId, userId]
+        mql.query('SELECT * FROM members WHERE chatroomsId=? AND userId=?', param, (err,row) => {
+            if(err) return res.json({
+                success: false,
+                error: err
+            });
+            else if(row.length >1 || row.length==0){
+                return res.json({
+                    success: false,
+                    error: "해당 room에 접속중인 해당 user 정보가 없거나 혹은 여러개 입니다."
+                });
+            }
+            else{
+                return res.json({
+                    success: true
+                });
+            }
+            
+            
+        })
+    },
+    //post
+    leaveRoom: (req, res) =>{
+        //auth (server -> client에게 userId 전달 -> server에게 재전달)
+        // (client) userId + roomId -> (server) 해당 room에 user가 접속 중인지
+        console.log("🚀 ~ req.body", req.body)
+        let userId = req.user.id;
+        const param = [req.body.roomId, userId]
         mql.query('SELECT * FROM chatrooms WHERE id=?', param[0], (err,row) => {
             if(err) return res.json({
                 success: false,
                 error: err
-            });//row 있음 -> 중복 room o -> 생성불가능
-            else if(row.length == 0){
+            });
+            //해당 room이 없는 경우
+            else if (row.length == 0){
                 return res.json({
                     success: false,
-                    error: 'roomId에 해당하는 room이 존재하지 않습니다.'
+                    error: "해당 room이 존재하지 않습니다."
                 });
-            };
-            mql.query('SELECT * FROM members WHERE chatroomsId=?', param[0], (err,row) => {
-                if(err) return res.json({
-                    success: false,
-                    error: err
-                });//row 있음 -> 중복 room o -> 생성불가능
-                else if(row.length == 0){
-                    return res.json({
-                        success: false,
-                        error: 'roomId에 참여중인 member가 존재하지 않습니다.'
-                    });
-                };
-
-                mql.query('INSERT INTO members(`chatroomsId`, `userId`) VALUES (?,?)', param, (err,row) => {
+            }
+            else{
+                mql.query('DELETE FROM members WHERE chatroomsId=? AND userId=?', param, (err,row) => {
                     if(err) return res.json({
                         success: false,
                         error: err
                     });
-                    return res.json({
-                        success: true
-                    });
+                    //delete row 없는 경우
+                    else if (row.affectedRows == 0){
+                        return res.json({
+                            success: false,
+                            error: '해당 room에 해당 user가 참여중이지 않습니다.'
+                        });
+                    }                    
+                    else{
+                        mql.query('SELECT * FROM members WHERE chatroomsId=?', param[0], (err,row) => {
+                            console.log(row.length);
+                            if(err) return res.json({
+                                success: false,
+                                error: err
+                            });
+                            
+                            //해당 room의 남은 인원 = 0
+                            else if (row.length == 0){
+                                //room 삭제
+                                mql.query('DELETE FROM chatrooms WHERE id=?', param[0], (err,row) => {
+                                    if(err) return res.json({
+                                        success: false,
+                                        error: err
+                                    });
+
+                                    return res.json({
+                                        success: true,
+                                        allDelete: true
+                                    });
+                                });
+                            }
+                            else{
+                                return res.json({
+                                    success: true,
+                                    allDelete: false
+                                });
+                            }
+                        });
+                    }
                 });
-            })
+            }
         })
+    },
+    //post
+    showMembers: (req, res) =>{
+        //(cliend) roomId -> (server) 해당 room에 참여중인 인원 전달
+        console.log("🚀 ~ req.body", req.body)
+        const param = [req.body.roomId]
+        mql.query('SELECT * FROM members WHERE chatroomsId=?', param[0], (err,row) => {
+            if(err) return res.json({
+                success: false,
+                error: err
+            });
+            else if (row.length == 0) return res.json({
+                success: false,
+                error: '해당 room은 존재하지 않습니다.'
+            });
+            else{
+                return res.json({
+                    success: true,
+                    memberLength: row.length
+                });
+            }
+        });
     },
 }
