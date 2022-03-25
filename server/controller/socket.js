@@ -228,4 +228,75 @@ module.exports = {
             }
         });
     },
+    //post
+    sendMsg: (req, res) =>{
+        //(cliend) roomId, msg -> (server) msg table에 저장
+        console.log("🚀 ~ req.body", req.body);
+        let userId = req.user.id;
+        const param = [req.body.roomId, userId, req.body.msg];
+        //해당 채팅방에 참여 중인지 확인
+        mql.query('SELECT * FROM members WHERE chatroomsId=? AND userId=?', [param[0], param[1]], (err,row) => {
+            if(err) return res.json({
+                success: false,
+                error: err
+            });
+
+            //참여 중
+            else if (row.length > 0){
+                mql.query('INSERT INTO messages(`chatroomsId`, `userId`, `coment`) VALUES (?,?,?)', param, (err,row) => {
+                    if(err) return res.json({
+                        success: false,
+                        error: err
+                    });
+                    
+                    return res.json({
+                        success: true
+                    });
+                    
+                });
+            }
+        });
+    },
+    //post
+    getMsg: (req, res) =>{
+        //(cliend) roomId -> (server) msg table rows 전달
+        console.log("🚀 ~ req.body", req.body);
+        let userId = req.user.id;
+        const param = [req.body.roomId, userId];
+        //해당 room이 존재하는지 확인
+        mql.query('SELECT * FROM chatrooms WHERE id=?', param[0], (err,row) => {
+            if(err) return res.json({
+                success: false,
+                error: err
+            });
+            //room 존재
+            else if (row.length > 0){
+                mql.query('SELECT * FROM messages WHERE chatroomsId=?', param[0], (err,row) => {
+                    if(err) return res.json({
+                        success: false,
+                        error: err
+                    });
+                    //bool
+                    //true : 본인이 보낸 메시지
+                    //false : 타인이 보낸 메시지
+                    const result = row.map(function(obj){
+                        let bool = false;
+                        if(obj['userId'] === userId){
+                            bool = true;
+                        }
+                        let newObj = {
+                            ...obj,
+                            "owner": bool
+                        };
+                        return newObj;
+                    });
+                    return res.json({
+                        success: true,
+                        result
+                    });
+                    
+                });
+            }
+        });
+    },
 }

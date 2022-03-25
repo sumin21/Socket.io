@@ -9,7 +9,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const {auth} = require("./middleware/auth");
 const {creatUser, loginUser, authUser, logoutUser} = require('./controller/user');
-const {creatRoom, showRooms, joinRoom, memberAuth, leaveRoom, showMembers} = require('./controller/socket');
+const {creatRoom, showRooms, joinRoom, memberAuth, leaveRoom, showMembers, sendMsg, getMsg} = require('./controller/socket');
 
 const mysql = require('mysql');
 
@@ -117,6 +117,12 @@ app.post('/api/users/leaveroom', auth, leaveRoom);
 
 //showMembers route
 app.post('/api/users/showmembers', showMembers);
+
+//sendMsg route
+app.post('/api/users/sendmsg',auth, sendMsg);
+
+//getMsg route
+app.post('/api/users/getmsg',auth, getMsg);
 
 
 httpServer.listen(5000);
