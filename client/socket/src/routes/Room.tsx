@@ -50,20 +50,29 @@ const RoomPeople = styled.div`
 const RoomPeopleCount = styled.div``;
 const RoomPeopleMax = styled.div``;
 
+type Rooms = {
+  id: number;
+  lastChatTime: string;
+  location: string;
+  maxNumber: number;
+  title: string;
+  memberLength: number;
+};
+
 const Room = (props: any) => {
   return (
     <RoomsScroll>
-      {props.countList &&
-        props.countList.map((item: any, i: any) => (
-          <RoomCss key={i}>
+      {props.rooms.length &&
+        props.rooms.map((row: Rooms) => (
+          <RoomCss key={row.id}>
             <RoomTitleContainer>
               <RoomTitles>
-                <RoomLocation>[수원]</RoomLocation>
-                <RoomTitle>{props.titleProps}</RoomTitle>
+                <RoomLocation>{row.location}</RoomLocation>
+                <RoomTitle>{row.title}</RoomTitle>
               </RoomTitles>
               <RoomPeople>
-                <RoomPeopleCount>3</RoomPeopleCount>/
-                <RoomPeopleMax>5</RoomPeopleMax>
+                <RoomPeopleCount>{row.memberLength}</RoomPeopleCount>/
+                <RoomPeopleMax>{row.maxNumber}</RoomPeopleMax>
               </RoomPeople>
             </RoomTitleContainer>
           </RoomCss>

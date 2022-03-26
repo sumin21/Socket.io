@@ -61,7 +61,7 @@ module.exports = {
             });
             return res.json({
                 success: true, 
-                rooms: row
+                results: row
             });
         });
         
@@ -233,6 +233,7 @@ module.exports = {
         //(cliend) roomId, msg -> (server) msg table에 저장
         console.log("🚀 ~ req.body", req.body);
         let userId = req.user.id;
+        const time = new Date().toISOString().slice(0, 19).replace('T', ' ');
         const param = [req.body.roomId, userId, req.body.msg];
         //해당 채팅방에 참여 중인지 확인
         mql.query('SELECT * FROM members WHERE chatroomsId=? AND userId=?', [param[0], param[1]], (err,row) => {
@@ -248,11 +249,35 @@ module.exports = {
                         success: false,
                         error: err
                     });
-                    
-                    return res.json({
-                        success: true
-                    });
-                    
+                    else{
+                        const rowId = row.insertId;
+                        mql.query('UPDATE chatrooms SET lastChatTime=? WHERE id=?', [time, param[0]], (err,row) => {
+                            if(err) {
+                                mql.query('DELETE FROM messages WHERE id=?', rowId, (err,row) => {
+                                    if(err) return res.json({
+                                        success: false,
+                                        error: err
+                                    });
+                                    else if (row.length > 0){
+                                        return res.json({
+                                            success: false,
+                                            error: 'chatroom의 lastchattime 업데이트 실패. messages 삭제 성공'
+                                        });
+                                    }
+                                    else{
+                                        return res.json({
+                                            success: false,
+                                            error: 'chatroom의 lastchattime 업데이트 실패. messages 삭제 실패. (삭제된 데이터 개수 = 0)'
+                                        });
+                                    }
+                                    
+                                });
+                            }
+                            return res.json({
+                                success: true,
+                            });
+                        });
+                    }
                 });
             }
         });

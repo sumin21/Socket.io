@@ -99,30 +99,32 @@ app.get('/api/users/auth', auth, authUser);
 //logout (login된 상태이기 때문에 auth를 넣어준다.)
 app.get('/api/users/logout', auth, logoutUser);
 
+
+//--- socket controller
 //createRoom route
-app.post('/api/users/creatroom', auth, creatRoom);
+app.post('/api/sockets/creatroom', auth, creatRoom);
 
 //showRooms route
-app.get('/api/users/showrooms', showRooms);
+app.get('/api/sockets/showrooms', showRooms);
 
 
 //joinRoom route
-app.post('/api/users/joinroom', auth, joinRoom);
+app.post('/api/sockets/joinroom', auth, joinRoom);
 
 //memberAuth route
-app.post('/api/users/memberauth', auth, memberAuth);
+app.post('/api/sockets/memberauth', auth, memberAuth);
 
 //leaveRoom route
-app.post('/api/users/leaveroom', auth, leaveRoom);
+app.post('/api/sockets/leaveroom', auth, leaveRoom);
 
 //showMembers route
-app.post('/api/users/showmembers', showMembers);
+app.post('/api/sockets/showmembers', showMembers);
 
 //sendMsg route
-app.post('/api/users/sendmsg',auth, sendMsg);
+app.post('/api/sockets/sendmsg',auth, sendMsg);
 
 //getMsg route
-app.post('/api/users/getmsg',auth, getMsg);
+app.post('/api/sockets/getmsg',auth, getMsg);
 
 
 httpServer.listen(5000);

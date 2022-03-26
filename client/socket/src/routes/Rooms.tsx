@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useEffect, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
+import Axios from "axios";
 import Button from "react-bootstrap/Button";
 import Room from "./Room";
 import axios from "axios";
@@ -20,6 +21,59 @@ const ChatStart = styled.div`
   padding-bottom: 0.3rem;
   font-weight: bold;
   color: #e69999;
+`;
+
+const AddRoom = styled.div<{ active?: boolean }>`
+  background-color: #ebc6c7;
+  border-radius: 20px;
+  margin-top: 1rem;
+  cursor: pointer;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  padding-right: 1.2rem;
+  padding-left: 1.2rem;
+  font-weight: bold;
+  color: #e69999;
+  display: ${(props) => (props.active ? "block" : "none")};
+`;
+
+const AddRoomBtn = styled.div<{ active?: boolean }>`
+  background-color: #e59999;
+  border-radius: 10px;
+  margin-top: 1rem;
+  cursor: pointer;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+  font-weight: bold;
+  color: white;
+  display: ${(props) => (props.active ? "block" : "none")};
+`;
+
+const FlexBetween = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
+const RoomTitleInputBox = styled.input`
+  //padding: 2rem;
+  /* display: inline-block; */
+  /* min-width: 100px;
+  max-width: 160px; */
+  margin-top: 0.5rem;
+`;
+
+const RoomLocationInputBox = styled.input`
+  //padding: 2rem;
+  /* display: inline-block; */
+  min-width: 100px;
+  max-width: 160px;
+`;
+
+const RoomMaxMemberInputBox = styled.input`
+  //padding: 2rem;
+  /* display: inline-block; */
+  min-width: 100px;
+  max-width: 160px;
 `;
 
 const ChatInputBox = styled.input`
@@ -101,7 +155,66 @@ const RoomPeople = styled.div`
 const RoomPeopleCount = styled.div``;
 const RoomPeopleMax = styled.div``;
 
+type Roomtype = {
+  id: number;
+  lastChatTime: string;
+  location: string;
+  maxNumber: number;
+  title: string;
+};
+
 const Rooms = (props: any) => {
+  const [rooms, setRooms]: [
+    rooms: Array<Roomtype>,
+    setRooms: (x: any) => void
+  ] = useState([]);
+  const [countList, setCountList] = useState([0]);
+  const [newRooms, setNewRooms]: [
+    rooms: Array<Roomtype>,
+    setRooms: (x: any) => void
+  ] = useState([]);
+  useEffect(() => {
+    console.log("rooms 접속");
+
+    // 로그인 안된 유저는 요청 못보내게 막아야 하나?
+    Axios.get("/api/sockets/showrooms") //
+      .then(function (response) {
+        console.log("showrooms result:", response.data.results);
+        //rooms component 생성
+        let result = response.data.results;
+
+        //newRooms: promise 객체
+        const newRoomsFunc = async () => {
+          const newRooms = result.map(async (row: Roomtype) => {
+            let body = {
+              roomId: row.id,
+            };
+            const newRoom = await Axios.post("/api/sockets/showmembers", body) //
+              .then(function (response) {
+                const newRow = {
+                  ...row,
+                  memberLength: response.data.memberLength,
+                };
+                return newRow;
+              })
+              .catch(function (error) {
+                console.log(error);
+                return;
+              });
+            return newRoom;
+          });
+          const newRoomsPromise = await Promise.all(newRooms);
+          console.log(newRoomsPromise); //
+          setRooms(newRoomsPromise);
+          console.log("rooms", rooms);
+        };
+        newRoomsFunc();
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }, []);
+
   const [searchValue, setSearchValue] = useState("");
   const [beforeSearchValue, setBeforeSearchValue] = useState("");
   const onSearchHandler = (event: any) => {
@@ -117,21 +230,88 @@ const Rooms = (props: any) => {
     setBeforeSearchValue(searchValue);
   };
 
-  const [countList, setCountList] = useState([0]);
+  const [isBlock, setIsBlock] = useState(false);
+  const [addChatTxt, setAddChatTxt] = useState("채팅방 개설하기");
+  const [chatTitle, setChatTitle] = useState("");
+  const [chatLocation, setChatLocation] = useState("");
+  const [chatMaxMember, setChatMaxMember] = useState(0);
 
-  const onAddDetailDiv = () => {
-    let countArr = [...countList];
-    let counter = countArr.slice(-1)[0];
-    counter += 1;
-    countArr.push(counter); // index 사용 X
-    // countArr[counter] = counter	// index 사용 시 윗줄 대신 사용
-    setCountList(countArr);
-    console.log(countList);
+  const addChatRoomClick = () => {
+    if (isBlock) {
+      setAddChatTxt("채팅방 개설하기");
+    } else {
+      setAddChatTxt("닫기");
+    }
+    setIsBlock(!isBlock);
+  };
+
+  const onRoomTitleHandler = (event: any) => {
+    setChatTitle(event.currentTarget.value);
+  };
+  const onRoomLocationHandler = (event: any) => {
+    setChatLocation(event.currentTarget.value);
+  };
+  const onRoomMaxMenberHandler = (event: any) => {
+    setChatMaxMember(event.currentTarget.value);
+  };
+
+  const addChatRoomBtnClick = () => {
+    let body = {
+      title: chatTitle,
+      location: chatLocation,
+      maxNumber: chatMaxMember,
+    };
+
+    console.log(body);
+
+    // if (isBlock) {
+    //   setAddChatTxt("채팅방 개설하기");
+    // } else {
+    //   setAddChatTxt("닫기");
+    // }
+    // setIsBlock(!isBlock);
   };
 
   return (
     <RoomsCss>
-      <ChatStart onClick={onAddDetailDiv}>채팅방 개설하기</ChatStart>
+      <ChatStart onClick={addChatRoomClick}>{addChatTxt}</ChatStart>
+      <AddRoom active={isBlock}>
+        <FlexBetween>
+          <RoomLocationInputBox
+            type="email"
+            name="email"
+            className="form-control"
+            id="chat-location"
+            aria-describedby="chatHelp"
+            placeholder="채팅방 지역"
+            defaultValue={chatLocation}
+            onChange={onRoomLocationHandler}
+          ></RoomLocationInputBox>
+          <RoomMaxMemberInputBox
+            type="email"
+            name="email"
+            className="form-control"
+            id="chat-maxMember"
+            aria-describedby="chatHelp"
+            placeholder="채팅방 최대인원"
+            defaultValue={chatMaxMember}
+            onChange={onRoomMaxMenberHandler}
+          ></RoomMaxMemberInputBox>
+        </FlexBetween>
+        <RoomTitleInputBox
+          type="email"
+          name="email"
+          className="form-control"
+          id="chat-title"
+          aria-describedby="chatHelp"
+          placeholder="채팅방 제목"
+          defaultValue={chatTitle}
+          onChange={onRoomTitleHandler}
+        ></RoomTitleInputBox>
+        <AddRoomBtn active={isBlock} onClick={addChatRoomBtnClick}>
+          채팅방 개설하기
+        </AddRoomBtn>
+      </AddRoom>
       <ChatInputs>
         <ChatInputBox
           type="email"
@@ -155,10 +335,13 @@ const Rooms = (props: any) => {
       <HrCss />
       <ChatRoomsContainer>
         <ChatRooms>
-          <Room countList={countList} titleProps="kk" />
+          <Room rooms={rooms} />
         </ChatRooms>
       </ChatRoomsContainer>
     </RoomsCss>
   );
 };
 export default Rooms;
+function getPromise() {
+  throw new Error("Function not implemented.");
+}
