@@ -19,7 +19,7 @@ function Auth(SpecificComponent, option) {
     //true    =>  로그인한 유저만 출입이 가능한 페이지
     //false   =>  로그인한 유저는 출입 불가능한 페이지
     function AuthenticationCheck(props) {
-        
+            console.log('auth')
             Axios.get('/api/users/auth')//
             .then(function (response) {
                 console.log(response.data.isAuth);
@@ -34,7 +34,7 @@ function Auth(SpecificComponent, option) {
                     
                     if (option === false) {
                         console.log('로그인한 유저는 출입금지');
-                        history.push('/')
+                        history.push('/rooms')
                         // history.go(-1);
                     }
                     

@@ -2,7 +2,6 @@ import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 import styled, { createGlobalStyle } from "styled-components";
 
 import Auth from "./hoc/auth";
-import Hello from "./routes/Hello";
 import Home from "./routes/Home";
 import Login from "./routes/Login";
 import Rooms from "./routes/Rooms";
@@ -103,10 +102,10 @@ const ChatTitle = styled.h1`
 `;
 
 const App: React.FC = () => {
-  const newHomePage = Auth(Home, true);
+  // const newHomePage = Auth(Home, true);
   const newLoginPage = Auth(Login, false);
   const newRoomsPage = Auth(Rooms, true);
-  const newHelloPage = SocketAuth(Hello, true);
+  const newHomePage = SocketAuth(Home, true);
 
   return (
     <>
@@ -118,10 +117,9 @@ const App: React.FC = () => {
               <MyForm className="form">
                 <ChatTitle>Socket Chat</ChatTitle>
                 <Switch>
-                  <Route exact path="/" component={newHomePage} />
+                  <Route exact path="/room" component={newHomePage} />
                   <Route exact path="/login" component={newLoginPage} />
                   <Route exact path="/rooms" component={newRoomsPage} />
-                  <Route path="/hello" component={newHelloPage} />
                 </Switch>
               </MyForm>
             </div>

@@ -34,10 +34,10 @@ io.on("connection", (socket) => {
   // console.log('namespace1 room', socket.rooms);
 
   // 방 나감 (방번호, 이름) 0/1
-  socket.on('leaveRoom', (roomId, userId) => {
-    console.log('leave', roomId, userId);
+  socket.on('leaveRoom', (roomId) => {
+    console.log('leave', roomId);
     socket.leave(roomId);
-    io.to(roomId).emit('leaveRoom', roomId, userId);
+    io.to(roomId).emit('leaveRoom', roomId);
   });
 
   socket.on('joinRoom', (roomId, userId) => {

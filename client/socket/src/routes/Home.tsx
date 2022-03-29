@@ -4,9 +4,9 @@ import "./Home.css";
 import React, { useEffect, useState } from "react";
 import { Route, Switch, useHistory, useLocation } from "react-router-dom";
 
+import Axios from "axios";
 import Button from "react-bootstrap/Button";
 import Rooms from "./Rooms";
-import axios from "axios";
 import { io } from "socket.io-client";
 import styled from "styled-components";
 
@@ -52,10 +52,10 @@ const ChatInputBox = styled.input`
   margin-right: 1rem;
 `;
 
-const ChatInputs = styled.div<{ active?: boolean }>`
+const ChatInputs = styled.div`
   display: flex;
   margin-top: 1rem;
-  display: ${(props) => (props.active ? "border" : "none")};
+  display: "border";
 `;
 
 const SendBtn = styled.button`
@@ -64,18 +64,6 @@ const SendBtn = styled.button`
   width: 20%;
   color: #e65065;
   font-weight: bold;
-`;
-
-const LogoutBtn = styled.button`
-  font-size: small;
-  font-weight: bold;
-  color: #e65065;
-  margin-top: 0.7rem;
-`;
-
-const LogoutBox = styled.div`
-  display: flex;
-  flex-direction: row-reverse;
 `;
 
 const HrCss = styled.hr`
@@ -102,13 +90,11 @@ const ChatStart = styled.div`
 `;
 
 let socket: any = null;
-const Home = (props: any) => {
-  const history = useHistory();
-  // 빈배열 넣음으로 -> 새로고침 시에만 재적용
-  useEffect(() => {
-    console.log("접속");
-  }, []);
 
+const Home = (props: any) => {
+  // const history = useHistory();
+
+  const [userName, setUserName] = useState("");
   const [content, setContent] = useState("");
   const [codes, setCodes] = useState("");
   const [displayClass, setDisplayClass]: [
@@ -116,104 +102,87 @@ const Home = (props: any) => {
     setDisplayClass: (x: any) => void
   ] = useState(false);
 
-  const [chatStartTxt, setchatStartTxt] = useState("채팅 시작하기");
-
-  const onContentHandler = (event: any) => {
-    setContent(event.currentTarget.value);
-  };
-
-  // user name
-  const location: any = useLocation<string>();
-  let userName: string = "";
-  try {
-    userName = location.state.userName;
-  } catch (err) {
-    userName = "";
-  }
-
-  const handleClick: any = (num: number) => {
-    let message = {
-      content,
-      sender: socket.id,
-    };
-    console.log(message);
-
-    if (message.content != "") {
-      socket.emit("message", 0, userName, message);
-      setContent("");
-    }
-  };
-
-  const startClickHandler: any = () => {
-    console.log("클릭");
-    if (!displayClass) {
-      setDisplayClass(true);
-      setchatStartTxt("채팅 그만하기");
-      //새로고침 -> 새로 연결 (이슈)
-      socket = io("ws://localhost:5000/", {});
-
-      socket.on("connect", () => {
-        console.log(`connect ${socket.id}`);
-      });
-
-      // socket.on("connect_error", () => {
-      //   setTimeout(() => {
-      //     socket.connect();
-      //   }, 1000);
-      // });
-
-      socket.emit("joinRoom", 0, userName);
-    } else {
-      setDisplayClass(false);
-      setchatStartTxt("채팅 시작하기");
-      console.log("그만");
-      socket.emit("leaveRoom", 0, userName);
-      setCodes("");
-    }
-  };
-
-  const socketHandler: any = () => {
-    console.log("chat");
-    socket.on("leaveRoom", (num: number, name: string) => {
-      console.log(`leaveRoom!`, num, name);
-    });
-
-    socket.on("joinRoom", (num: number, name: string) => {
-      console.log(`joinRoom!`, num, name);
-      setcodeClassName2("joinRoom");
-      setMessage2(`${name}님이 채팅방에 입장하셨습니다.`);
-      let newCode =
-        codes +
-        `<div class='joinRoom'>${name}님이 채팅방에 입장하셨습니다.</div>`;
-      setbol(true);
-      setCodes2(newCode);
-    });
-
-    // sender & receiver message
-    socket.on(
-      "send message",
-      (name: string, msg: { content: string; sender: string }) => {
-        console.log(`send message!`, name, msg);
-        let messages = {
-          message: msg.content,
-          sender: msg.sender,
-        };
-        let codeClassName: string = "";
-        if (messages.sender == socket.id) {
-          codeClassName = "senderChat";
-        } else {
-          codeClassName = "receiverChat";
-        }
-        codesHandler(codeClassName, messages.message);
-        setContent("");
-      }
-    );
-  };
-
   const [codes2, setCodes2] = useState("1");
   const [bol, setbol] = useState(true);
   const [codeClassName2, setcodeClassName2] = useState("");
   const [message2, setMessage2] = useState("");
+
+  const codesHandler = (codeClassName: string, message: string) => {
+    console.log("codesss");
+    console.log(codes); //
+    let newCode = codes + `<div class=${codeClassName}>${message}</div>`;
+    setcodeClassName2(codeClassName);
+    setMessage2(message);
+    setbol(true);
+    setCodes2(newCode);
+    console.log(newCode);
+    setCodes(newCode);
+    console.log(codes);
+  };
+  // const location = useLocation<any>();
+  // const userN = location.state.userName;
+
+  // 빈배열 넣음으로 -> 새로고침 시에만 재적용
+  useEffect(() => {
+    console.log("room 접속!!!");
+
+    //auth 안거쳐도 되는지 확인;
+
+    // console.log(userN);
+    Axios.get("/api/users/auth") //
+      .then(function (response) {
+        // chatroomid
+
+        console.log(response.data.name);
+        //새로고침 -> 새로 연결 (이슈)
+        socket = io("ws://localhost:5000/", {});
+
+        socket.on("connect", () => {
+          console.log(`connect ${socket.id}`);
+        });
+
+        socket.emit("joinRoom", 0, response.data.name);
+
+        socket.on("leaveRoom", (num: number, name: string) => {
+          console.log(`leaveRoom!`, num, name);
+        });
+
+        socket.on("joinRoom", (num: number, name: string) => {
+          console.log(`joinRoom!`, num, name);
+          setcodeClassName2("joinRoom");
+          setMessage2(`${name}님이 채팅방에 입장하셨습니다.`);
+          let newCode =
+            codes +
+            `<div class='joinRoom'>${name}님이 채팅방에 입장하셨습니다.</div>`;
+          setbol(true);
+          setCodes2(newCode);
+        });
+
+        // sender & receiver message
+        socket.on(
+          "send message",
+          (name: string, msg: { content: string; sender: string }) => {
+            console.log(`send message!`, name, msg);
+            let messages = {
+              message: msg.content,
+              sender: msg.sender,
+            };
+            let codeClassName: string = "";
+            if (messages.sender == socket.id) {
+              codeClassName = "senderChat";
+            } else {
+              codeClassName = "receiverChat";
+            }
+            codesHandler(codeClassName, messages.message);
+            setContent("");
+          }
+        );
+      })
+      .catch(function (error) {
+        console.log(error);
+        return;
+      });
+  }, []);
 
   useEffect(() => {
     if (bol) {
@@ -228,40 +197,109 @@ const Home = (props: any) => {
     };
   }, [codes2]);
 
-  const codesHandler = (codeClassName: string, message: string) => {
-    console.log("codesss");
-    console.log(codes); //
-    let newCode = codes + `<div class=${codeClassName}>${message}</div>`;
-    setcodeClassName2(codeClassName);
-    setMessage2(message);
-    setbol(true);
-    setCodes2(newCode);
-    console.log(newCode);
-    console.log(codes);
+  // const [chatStartTxt, setchatStartTxt] = useState("채팅 시작하기");
+
+  const onContentHandler = (event: any) => {
+    setContent(event.currentTarget.value);
   };
 
-  const onClickHandler = () => {
-    axios.get(`/api/users/logout`).then((response) => {
-      if (response.data.success) {
-        socket.emit("leaveRoom", 0, userName);
-        history.push("/login");
-      } else {
-        alert("로그아웃 하는데 실패 했습니다.");
-      }
-    });
+  const endClickHandler: any = () => {
+    console.log("그만");
+    socket.emit("leaveRoom", 0);
+    setCodes("");
   };
+
+  // user name
+  // const location: any = useLocation<string>();
+  // let userName: string = "";
+  // try {
+  //   userName = location.state.userName;
+  // } catch (err) {
+  //   userName = "";
+  // }
+
+  const handleClick: any = (num: number) => {
+    let message = {
+      content,
+      sender: socket.id,
+    };
+    console.log(message);
+
+    if (message.content != "") {
+      socket.emit("message", 0, userName, message);
+
+      setContent("");
+    }
+  };
+
+  // const startClickHandler: any = () => {
+  //   console.log("클릭");
+  //   if (!displayClass) {
+  //     //새로고침 -> 새로 연결 (이슈)
+  //     socket = io("ws://localhost:5000/", {});
+
+  //     socket.on("connect", () => {
+  //       console.log(`connect ${socket.id}`);
+  //     });
+
+  //     // socket.on("connect_error", () => {
+  //     //   setTimeout(() => {
+  //     //     socket.connect();
+  //     //   }, 1000);
+  //     // });
+
+  //     socket.emit("joinRoom", 0, userName);
+  //   } else {
+  //     setDisplayClass(false);
+  //     setchatStartTxt("채팅 시작하기");
+  //     console.log("그만");
+  //     socket.emit("leaveRoom", 0, userName);
+  //     setCodes("");
+  //   }
+  // };
+
+  // const socketHandler: any = () => {
+  //   console.log("chat");
+  //   socket.on("leaveRoom", (num: number, name: string) => {
+  //     console.log(`leaveRoom!`, num, name);
+  //   });
+
+  //   socket.on("joinRoom", (num: number, name: string) => {
+  //     console.log(`joinRoom!`, num, name);
+  //     setcodeClassName2("joinRoom");
+  //     setMessage2(`${name}님이 채팅방에 입장하셨습니다.`);
+  //     let newCode =
+  //       codes +
+  //       `<div class='joinRoom'>${name}님이 채팅방에 입장하셨습니다.</div>`;
+  //     setbol(true);
+  //     setCodes2(newCode);
+  //   });
+
+  //   // sender & receiver message
+  //   socket.on(
+  //     "send message",
+  //     (name: string, msg: { content: string; sender: string }) => {
+  //       console.log(`send message!`, name, msg);
+  //       let messages = {
+  //         message: msg.content,
+  //         sender: msg.sender,
+  //       };
+  //       let codeClassName: string = "";
+  //       if (messages.sender == socket.id) {
+  //         codeClassName = "senderChat";
+  //       } else {
+  //         codeClassName = "receiverChat";
+  //       }
+  //       codesHandler(codeClassName, messages.message);
+  //       setContent("");
+  //     }
+  //   );
+  // };
 
   return (
     <div>
-      <ChatStart
-        onClick={() => {
-          startClickHandler();
-          socketHandler();
-        }}
-      >
-        {chatStartTxt}
-      </ChatStart>
-      <ChatInputs active={displayClass}>
+      <ChatStart onClick={endClickHandler}>채팅 그만하기</ChatStart>
+      <ChatInputs>
         <ChatInputBox
           type="email"
           name="email"
@@ -280,11 +318,7 @@ const Home = (props: any) => {
           전송
         </SendBtn>
       </ChatInputs>
-      <LogoutBox>
-        <LogoutBtn type="button" className="btn btn" onClick={onClickHandler}>
-          로그아웃
-        </LogoutBtn>
-      </LogoutBox>
+
       <HrCss />
       <Chat>
         <div

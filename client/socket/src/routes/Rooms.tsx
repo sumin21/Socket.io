@@ -117,6 +117,18 @@ const ChatRooms = styled.div`
   /* height: expression( this.scrollHeight > 99 ? "200px" : "auto" ); */
 `;
 
+const LogoutBtn = styled.button`
+  font-size: small;
+  font-weight: bold;
+  color: #e65065;
+  margin-top: 0.7rem;
+`;
+
+const LogoutBox = styled.div`
+  display: flex;
+  flex-direction: row-reverse;
+`;
+
 const RoomCss = styled.div`
   /* color: white; */
   background-color: #f1e0e0;
@@ -164,6 +176,8 @@ type Roomtype = {
 };
 
 const Rooms = (props: any) => {
+  const history = useHistory();
+
   const [rooms, setRooms]: [
     rooms: Array<Roomtype>,
     setRooms: (x: any) => void
@@ -270,7 +284,8 @@ const Rooms = (props: any) => {
         // chatroomid
         if (response.data.success) {
           console.log(response.data.chatroomid);
-          setUseEffectBool(!useEffectBool);
+          // setUseEffectBool(!useEffectBool);
+          history.push(`/room?id=${response.data.chatroomid}`);
         } else {
           alert("중복되는 제목입니다. 다른 제목을 입력해주세요.");
         }
@@ -280,6 +295,17 @@ const Rooms = (props: any) => {
         return;
       });
     console.log(body);
+  };
+
+  const onLogoutClickHandler = () => {
+    axios.get(`/api/users/logout`).then((response) => {
+      if (response.data.success) {
+        // socket.emit("leaveRoom", 0, userName);
+        history.push("/login");
+      } else {
+        alert("로그아웃 하는데 실패 했습니다.");
+      }
+    });
   };
 
   return (
@@ -368,6 +394,15 @@ const Rooms = (props: any) => {
           검색
         </SendBtn>
       </ChatInputs>
+      <LogoutBox>
+        <LogoutBtn
+          type="button"
+          className="btn btn"
+          onClick={onLogoutClickHandler}
+        >
+          로그아웃
+        </LogoutBtn>
+      </LogoutBox>
 
       <HrCss />
       <ChatRoomsContainer>

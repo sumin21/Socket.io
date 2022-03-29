@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useEffect, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
+import Axios from "axios";
 import Button from "react-bootstrap/Button";
 import axios from "axios";
 import { io } from "socket.io-client";
@@ -63,9 +64,10 @@ const Room = (props: any) => {
   const history = useHistory();
 
   const roomClickHandler = (event: any) => {
+    //modal 창 띄우기 (디벨롭시)
     //event = roomId
     console.log(event);
-    history.push(`/hello?id=${event}`);
+    history.push(`/room?id=${event}`);
   };
 
   return (

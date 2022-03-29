@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 
+import Auth from "./auth";
 import Axios from 'axios';
 import Home from "../routes/Home";
 import Login from "../routes/Login";
@@ -20,6 +21,7 @@ function SocketAuth(SpecificComponent, option) {
     //false   =>  로그인한 유저는 출입 불가능한 페이지
     function AuthenticationCheck(props) {
         console.log((window.location.pathname));
+        const NewPage = Auth(SpecificComponent, true);
         const { search } = props.location;
         const roomId = search.substr(4);
         const body = {
@@ -36,8 +38,9 @@ function SocketAuth(SpecificComponent, option) {
             .catch(function (error) {
                 console.log(error);
             });
+        
         return (
-                <SpecificComponent />
+                <NewPage />
                 )
 
     }
