@@ -2,9 +2,11 @@ import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 import styled, { createGlobalStyle } from "styled-components";
 
 import Auth from "./hoc/auth";
+import Hello from "./routes/Hello";
 import Home from "./routes/Home";
 import Login from "./routes/Login";
 import Rooms from "./routes/Rooms";
+import SocketAuth from "./hoc/socketAuth";
 
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css2?family=Dongle:wght@300&display=swap');
@@ -32,6 +34,32 @@ time, mark, audio, video {
 }
 a{
   text-decoration:none !important;
+}
+.dropdown-toggle{
+  width: 100%;
+  background-color: #e59999;
+  border: 0;
+}
+.show>.btn-primary.dropdown-toggle {
+    color: #fff;
+    background-color: #e59999;
+    border-color: #e59999;
+}
+.btn-primary:focus {
+    color: #fff;
+    background-color: #e59999;
+    border-color: #e59999;
+    box-shadow: 0 0 0 0.25rem rgb(49 132 253 / 50%);
+}
+.btn-primary:hover {
+    color: #fff;
+    background-color: #e59999;
+    border-color: #e59999;
+    box-shadow: 0 0 0 0.25rem rgb(49 132 253 / 50%);
+}
+.dropdown-menu{
+  max-height: 150px;
+  overflow-y: scroll;
 }
 `;
 
@@ -78,6 +106,7 @@ const App: React.FC = () => {
   const newHomePage = Auth(Home, true);
   const newLoginPage = Auth(Login, false);
   const newRoomsPage = Auth(Rooms, true);
+  const newHelloPage = SocketAuth(Hello, true);
 
   return (
     <>
@@ -92,6 +121,7 @@ const App: React.FC = () => {
                   <Route exact path="/" component={newHomePage} />
                   <Route exact path="/login" component={newLoginPage} />
                   <Route exact path="/rooms" component={newRoomsPage} />
+                  <Route path="/hello" component={newHelloPage} />
                 </Switch>
               </MyForm>
             </div>

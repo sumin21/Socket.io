@@ -11,7 +11,7 @@ import { useHistory } from 'react-router-dom';
 // import { useDispatch } from 'react-redux';
 // import { auth } from '../_actions/user_action';
 
-function Auth(SpecificComponent, option) {
+function SocketAuth(SpecificComponent, option) {
     const history = useHistory();
     // console.log(SpecificComponent);
     //option:
@@ -19,27 +19,19 @@ function Auth(SpecificComponent, option) {
     //true    =>  로그인한 유저만 출입이 가능한 페이지
     //false   =>  로그인한 유저는 출입 불가능한 페이지
     function AuthenticationCheck(props) {
-        
-            Axios.get('/api/users/auth')//
+        console.log((window.location.pathname));
+        const { search } = props.location;
+        const roomId = search.substr(4);
+        const body = {
+            roomId
+        };
+        console.log(body);
+            Axios.post('/api/sockets/memberauth', body)//
             .then(function (response) {
-                console.log(response.data.isAuth);
-                //로그인 안한 상태
-                if (!response.data.isAuth) {
-                    if (option) {
-                        console.log('로그인 안한 유저는 출입금지');
-                        history.push('/login');
-                    }
-                }else {
-                    //로그인 한 상태 
-                    
-                    if (option === false) {
-                        console.log('로그인한 유저는 출입금지');
-                        history.push('/')
-                        // history.go(-1);
-                    }
-                    
+                if(!response.data.success){
+                    console.log('해당 채팅방에 참여중이지 않은 유저는 출입금지');
+                    history.push('/rooms');
                 }
-        
             })
             .catch(function (error) {
                 console.log(error);
@@ -53,4 +45,4 @@ function Auth(SpecificComponent, option) {
     
 }
 
-export default Auth
+export default SocketAuth

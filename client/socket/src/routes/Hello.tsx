@@ -1,7 +1,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 
 import React, { useEffect, useState } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation, useParams } from "react-router-dom";
 
 import Button from "react-bootstrap/Button";
 import axios from "axios";
@@ -59,34 +59,11 @@ type Rooms = {
   memberLength: number;
 };
 
-const Room = (props: any) => {
-  const history = useHistory();
+const Hello = (props: any) => {
+  //   const { search } = props.location;
+  //   console.log(search);
 
-  const roomClickHandler = (event: any) => {
-    //event = roomId
-    console.log(event);
-    history.push(`/hello?id=${event}`);
-  };
-
-  return (
-    <RoomsScroll>
-      {props.rooms.length &&
-        props.rooms.map((row: Rooms) => (
-          <RoomCss key={row.id} onClick={() => roomClickHandler(row.id)}>
-            <RoomTitleContainer>
-              <RoomTitles>
-                <RoomLocation>{row.location}</RoomLocation>
-                <RoomTitle>{row.title}</RoomTitle>
-              </RoomTitles>
-              <RoomPeople>
-                <RoomPeopleCount>{row.memberLength}</RoomPeopleCount>/
-                <RoomPeopleMax>{row.maxNumber}</RoomPeopleMax>
-              </RoomPeople>
-            </RoomTitleContainer>
-          </RoomCss>
-        ))}
-    </RoomsScroll>
-  );
+  return <div>hello</div>;
 };
 
-export default Room;
+export default Hello;

@@ -1,10 +1,10 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 
+import { Dropdown, DropdownButton } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
 import Axios from "axios";
-import Button from "react-bootstrap/Button";
 import Room from "./Room";
 import axios from "axios";
 import { io } from "socket.io-client";
@@ -62,17 +62,17 @@ const RoomTitleInputBox = styled.input`
   margin-top: 0.5rem;
 `;
 
-const RoomLocationInputBox = styled.input`
+const RoomLocationInputBox = styled.div`
   //padding: 2rem;
   /* display: inline-block; */
-  min-width: 100px;
+  min-width: 150px;
   max-width: 160px;
 `;
 
-const RoomMaxMemberInputBox = styled.input`
+const RoomMaxMemberInputBox = styled.div`
   //padding: 2rem;
   /* display: inline-block; */
-  min-width: 100px;
+  min-width: 150px;
   max-width: 160px;
 `;
 
@@ -173,47 +173,49 @@ const Rooms = (props: any) => {
     rooms: Array<Roomtype>,
     setRooms: (x: any) => void
   ] = useState([]);
+  const [useEffectBool, setUseEffectBool] = useState(true);
   useEffect(() => {
     console.log("rooms 접속");
 
     // 로그인 안된 유저는 요청 못보내게 막아야 하나?
     Axios.get("/api/sockets/showrooms") //
       .then(function (response) {
-        console.log("showrooms result:", response.data.results);
-        //rooms component 생성
-        let result = response.data.results;
-
-        //newRooms: promise 객체
-        const newRoomsFunc = async () => {
-          const newRooms = result.map(async (row: Roomtype) => {
-            let body = {
-              roomId: row.id,
-            };
-            const newRoom = await Axios.post("/api/sockets/showmembers", body) //
-              .then(function (response) {
-                const newRow = {
-                  ...row,
-                  memberLength: response.data.memberLength,
-                };
-                return newRow;
-              })
-              .catch(function (error) {
-                console.log(error);
-                return;
-              });
-            return newRoom;
-          });
-          const newRoomsPromise = await Promise.all(newRooms);
-          console.log(newRoomsPromise); //
-          setRooms(newRoomsPromise);
-          console.log("rooms", rooms);
-        };
-        newRoomsFunc();
+        if (response.data.success) {
+          console.log("showrooms result:", response.data.results);
+          //rooms component 생성
+          let result = response.data.results;
+          //newRooms: promise 객체
+          const newRoomsFunc = async () => {
+            const newRooms = result.map(async (row: Roomtype) => {
+              let body = {
+                roomId: row.id,
+              };
+              const newRoom = await Axios.post("/api/sockets/showmembers", body) //
+                .then(function (response) {
+                  const newRow = {
+                    ...row,
+                    memberLength: response.data.memberLength,
+                  };
+                  return newRow;
+                })
+                .catch(function (error) {
+                  console.log(error);
+                  return;
+                });
+              return newRoom;
+            });
+            const newRoomsPromise = await Promise.all(newRooms);
+            console.log(newRoomsPromise); //
+            setRooms(newRoomsPromise);
+            console.log("rooms", rooms);
+          };
+          newRoomsFunc();
+        }
       })
       .catch(function (error) {
         console.log(error);
       });
-  }, []);
+  }, [useEffectBool]);
 
   const [searchValue, setSearchValue] = useState("");
   const [beforeSearchValue, setBeforeSearchValue] = useState("");
@@ -233,8 +235,8 @@ const Rooms = (props: any) => {
   const [isBlock, setIsBlock] = useState(false);
   const [addChatTxt, setAddChatTxt] = useState("채팅방 개설하기");
   const [chatTitle, setChatTitle] = useState("");
-  const [chatLocation, setChatLocation] = useState("");
-  const [chatMaxMember, setChatMaxMember] = useState(0);
+  const [chatLocation, setChatLocation] = useState("서울");
+  const [chatMaxMember, setChatMaxMember] = useState(5);
 
   const addChatRoomClick = () => {
     if (isBlock) {
@@ -249,10 +251,11 @@ const Rooms = (props: any) => {
     setChatTitle(event.currentTarget.value);
   };
   const onRoomLocationHandler = (event: any) => {
-    setChatLocation(event.currentTarget.value);
+    console.log(event);
+    setChatLocation(event);
   };
   const onRoomMaxMenberHandler = (event: any) => {
-    setChatMaxMember(event.currentTarget.value);
+    setChatMaxMember(event);
   };
 
   const addChatRoomBtnClick = () => {
@@ -262,14 +265,21 @@ const Rooms = (props: any) => {
       maxNumber: chatMaxMember,
     };
 
+    Axios.post("/api/sockets/creatroom", body) //
+      .then(function (response) {
+        // chatroomid
+        if (response.data.success) {
+          console.log(response.data.chatroomid);
+          setUseEffectBool(!useEffectBool);
+        } else {
+          alert("중복되는 제목입니다. 다른 제목을 입력해주세요.");
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+        return;
+      });
     console.log(body);
-
-    // if (isBlock) {
-    //   setAddChatTxt("채팅방 개설하기");
-    // } else {
-    //   setAddChatTxt("닫기");
-    // }
-    // setIsBlock(!isBlock);
   };
 
   return (
@@ -277,26 +287,53 @@ const Rooms = (props: any) => {
       <ChatStart onClick={addChatRoomClick}>{addChatTxt}</ChatStart>
       <AddRoom active={isBlock}>
         <FlexBetween>
-          <RoomLocationInputBox
-            type="email"
-            name="email"
-            className="form-control"
-            id="chat-location"
-            aria-describedby="chatHelp"
-            placeholder="채팅방 지역"
-            defaultValue={chatLocation}
-            onChange={onRoomLocationHandler}
-          ></RoomLocationInputBox>
-          <RoomMaxMemberInputBox
-            type="email"
-            name="email"
-            className="form-control"
-            id="chat-maxMember"
-            aria-describedby="chatHelp"
-            placeholder="채팅방 최대인원"
-            defaultValue={chatMaxMember}
-            onChange={onRoomMaxMenberHandler}
-          ></RoomMaxMemberInputBox>
+          <RoomLocationInputBox>
+            <DropdownButton
+              id="dropdown-location-button"
+              className="w-100"
+              style={{ maxHeight: "28px" }}
+              title={chatLocation}
+              onSelect={(eventKey) => onRoomLocationHandler(eventKey)}
+            >
+              <Dropdown.Item eventKey="서울">서울</Dropdown.Item>
+              <Dropdown.Item eventKey="부산">부산</Dropdown.Item>
+              <Dropdown.Item eventKey="대구">대구</Dropdown.Item>
+              <Dropdown.Item eventKey="인천">인천</Dropdown.Item>
+              <Dropdown.Item eventKey="광주">광주</Dropdown.Item>
+              <Dropdown.Item eventKey="대전">대전</Dropdown.Item>
+              <Dropdown.Item eventKey="울산">울산</Dropdown.Item>
+              <Dropdown.Item eventKey="세종">세종</Dropdown.Item>
+              <Dropdown.Item eventKey="경기">경기</Dropdown.Item>
+              <Dropdown.Item eventKey="강원">강원</Dropdown.Item>
+              <Dropdown.Item eventKey="충청">충청</Dropdown.Item>
+              <Dropdown.Item eventKey="전라">전라</Dropdown.Item>
+              <Dropdown.Item eventKey="경상">경상</Dropdown.Item>
+              <Dropdown.Item eventKey="제주">제주</Dropdown.Item>
+            </DropdownButton>
+          </RoomLocationInputBox>
+          <RoomMaxMemberInputBox>
+            <DropdownButton
+              id="dropdown-maxnumber-button"
+              className="w-100"
+              title={chatMaxMember}
+              onSelect={(eventKey) => onRoomMaxMenberHandler(eventKey)}
+            >
+              <Dropdown.Item eventKey="2">2</Dropdown.Item>
+              <Dropdown.Item eventKey="3">3</Dropdown.Item>
+              <Dropdown.Item eventKey="4">4</Dropdown.Item>
+              <Dropdown.Item eventKey="5">5</Dropdown.Item>
+              <Dropdown.Item eventKey="6">6</Dropdown.Item>
+              <Dropdown.Item eventKey="7">7</Dropdown.Item>
+              <Dropdown.Item eventKey="8">8</Dropdown.Item>
+              <Dropdown.Item eventKey="9">9</Dropdown.Item>
+              <Dropdown.Item eventKey="10">10</Dropdown.Item>
+              <Dropdown.Item eventKey="11">11</Dropdown.Item>
+              <Dropdown.Item eventKey="12">12</Dropdown.Item>
+              <Dropdown.Item eventKey="13">13</Dropdown.Item>
+              <Dropdown.Item eventKey="14">14</Dropdown.Item>
+              <Dropdown.Item eventKey="15">15</Dropdown.Item>
+            </DropdownButton>
+          </RoomMaxMemberInputBox>
         </FlexBetween>
         <RoomTitleInputBox
           type="email"
