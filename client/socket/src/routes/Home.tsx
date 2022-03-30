@@ -92,15 +92,12 @@ const ChatStart = styled.div`
 let socket: any = null;
 
 const Home = (props: any) => {
-  // const history = useHistory();
+  const history = useHistory();
 
-  const [userName, setUserName] = useState("");
+  const [axiosUserName, setAxiosUserName] = useState("");
+  const [axiosRoomId, setAxiosRoomId] = useState("");
   const [content, setContent] = useState("");
   const [codes, setCodes] = useState("");
-  const [displayClass, setDisplayClass]: [
-    displayClass: boolean,
-    setDisplayClass: (x: any) => void
-  ] = useState(false);
 
   const [codes2, setCodes2] = useState("1");
   const [bol, setbol] = useState(true);
@@ -126,57 +123,96 @@ const Home = (props: any) => {
   useEffect(() => {
     console.log("room 접속!!!");
 
-    //auth 안거쳐도 되는지 확인;
+    //auth 안거쳐도 되는지 확인(ㅇㅇ...-> 버그 수정)
 
-    // console.log(userN);
+    // userName 가져오기
     Axios.get("/api/users/auth") //
       .then(function (response) {
         // chatroomid
+        // setUserName(response.data.name);
+        const userName = response.data.name;
+        console.log(userName);
+        setAxiosUserName(userName);
 
-        console.log(response.data.name);
-        //새로고침 -> 새로 연결 (이슈)
-        socket = io("ws://localhost:5000/", {});
+        //roomId 가져오기
+        Axios.get(`/api/sockets/getroomid`)
+          .then((response) => {
+            if (response.data.success) {
+              const roomId = response.data.roomId;
+              console.log(roomId);
+              setAxiosRoomId(roomId);
 
-        socket.on("connect", () => {
-          console.log(`connect ${socket.id}`);
-        });
+              //새로고침 -> 새로 연결 (이슈)
+              socket = io("ws://localhost:5000/", {});
 
-        socket.emit("joinRoom", 0, response.data.name);
+              //connect
+              socket.on("connect", () => {
+                console.log(`connect ${socket.id}`);
+              });
 
-        socket.on("leaveRoom", (num: number, name: string) => {
-          console.log(`leaveRoom!`, num, name);
-        });
+              //join
+              socket.emit("joinRoom", roomId, userName);
 
-        socket.on("joinRoom", (num: number, name: string) => {
-          console.log(`joinRoom!`, num, name);
-          setcodeClassName2("joinRoom");
-          setMessage2(`${name}님이 채팅방에 입장하셨습니다.`);
-          let newCode =
-            codes +
-            `<div class='joinRoom'>${name}님이 채팅방에 입장하셨습니다.</div>`;
-          setbol(true);
-          setCodes2(newCode);
-        });
+              //leaveRoom
+              socket.on("leaveRoom", (num: number, name: string) => {
+                console.log(`leaveRoom!`, num, name);
+                const body = {
+                  roomId: roomId,
+                };
+                Axios.post(`/api/sockets/leaveroom`, body)
+                  .then((response) => {
+                    if (response.data.success) {
+                      console.log(response.data.allDelete);
+                      history.push("/");
+                    } else {
+                      alert("방 나가기에 실패했습니다.");
+                    }
+                  })
+                  .catch(function (error) {
+                    console.log(error);
+                    return;
+                  });
+              });
 
-        // sender & receiver message
-        socket.on(
-          "send message",
-          (name: string, msg: { content: string; sender: string }) => {
-            console.log(`send message!`, name, msg);
-            let messages = {
-              message: msg.content,
-              sender: msg.sender,
-            };
-            let codeClassName: string = "";
-            if (messages.sender == socket.id) {
-              codeClassName = "senderChat";
+              //joinRoom
+              socket.on("joinRoom", (num: number, name: string) => {
+                console.log(`joinRoom!`, num, name);
+                setcodeClassName2("joinRoom");
+                setMessage2(`${name}님이 채팅방에 입장하셨습니다.`);
+                let newCode =
+                  codes +
+                  `<div class='joinRoom'>${name}님이 채팅방에 입장하셨습니다.</div>`;
+                setbol(true);
+                setCodes2(newCode);
+              });
+
+              //send message
+              socket.on(
+                "send message",
+                (name: string, msg: { content: string; sender: string }) => {
+                  console.log(`send message!`, name, msg);
+                  let messages = {
+                    message: msg.content,
+                    sender: msg.sender,
+                  };
+                  let codeClassName: string = "";
+                  if (messages.sender == socket.id) {
+                    codeClassName = "senderChat";
+                  } else {
+                    codeClassName = "receiverChat";
+                  }
+                  codesHandler(codeClassName, messages.message);
+                  setContent("");
+                }
+              );
             } else {
-              codeClassName = "receiverChat";
+              alert("해당 유저가 참여중인 room을 찾지 못했습니다.");
             }
-            codesHandler(codeClassName, messages.message);
-            setContent("");
-          }
-        );
+          })
+          .catch(function (error) {
+            console.log(error);
+            return;
+          });
       })
       .catch(function (error) {
         console.log(error);
@@ -205,18 +241,11 @@ const Home = (props: any) => {
 
   const endClickHandler: any = () => {
     console.log("그만");
-    socket.emit("leaveRoom", 0);
-    setCodes("");
-  };
+    // console.log(roomId);
+    socket.emit("leaveRoom", axiosRoomId, axiosUserName);
 
-  // user name
-  // const location: any = useLocation<string>();
-  // let userName: string = "";
-  // try {
-  //   userName = location.state.userName;
-  // } catch (err) {
-  //   userName = "";
-  // }
+    // setCodes("");
+  };
 
   const handleClick: any = (num: number) => {
     let message = {
@@ -226,75 +255,12 @@ const Home = (props: any) => {
     console.log(message);
 
     if (message.content != "") {
-      socket.emit("message", 0, userName, message);
+      console.log("msg 전달");
+      socket.emit("message", axiosRoomId, axiosUserName, message);
 
       setContent("");
     }
   };
-
-  // const startClickHandler: any = () => {
-  //   console.log("클릭");
-  //   if (!displayClass) {
-  //     //새로고침 -> 새로 연결 (이슈)
-  //     socket = io("ws://localhost:5000/", {});
-
-  //     socket.on("connect", () => {
-  //       console.log(`connect ${socket.id}`);
-  //     });
-
-  //     // socket.on("connect_error", () => {
-  //     //   setTimeout(() => {
-  //     //     socket.connect();
-  //     //   }, 1000);
-  //     // });
-
-  //     socket.emit("joinRoom", 0, userName);
-  //   } else {
-  //     setDisplayClass(false);
-  //     setchatStartTxt("채팅 시작하기");
-  //     console.log("그만");
-  //     socket.emit("leaveRoom", 0, userName);
-  //     setCodes("");
-  //   }
-  // };
-
-  // const socketHandler: any = () => {
-  //   console.log("chat");
-  //   socket.on("leaveRoom", (num: number, name: string) => {
-  //     console.log(`leaveRoom!`, num, name);
-  //   });
-
-  //   socket.on("joinRoom", (num: number, name: string) => {
-  //     console.log(`joinRoom!`, num, name);
-  //     setcodeClassName2("joinRoom");
-  //     setMessage2(`${name}님이 채팅방에 입장하셨습니다.`);
-  //     let newCode =
-  //       codes +
-  //       `<div class='joinRoom'>${name}님이 채팅방에 입장하셨습니다.</div>`;
-  //     setbol(true);
-  //     setCodes2(newCode);
-  //   });
-
-  //   // sender & receiver message
-  //   socket.on(
-  //     "send message",
-  //     (name: string, msg: { content: string; sender: string }) => {
-  //       console.log(`send message!`, name, msg);
-  //       let messages = {
-  //         message: msg.content,
-  //         sender: msg.sender,
-  //       };
-  //       let codeClassName: string = "";
-  //       if (messages.sender == socket.id) {
-  //         codeClassName = "senderChat";
-  //       } else {
-  //         codeClassName = "receiverChat";
-  //       }
-  //       codesHandler(codeClassName, messages.message);
-  //       setContent("");
-  //     }
-  //   );
-  // };
 
   return (
     <div>

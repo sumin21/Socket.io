@@ -111,7 +111,7 @@ const Login = () => {
           const userName: string = response.data.name;
           console.log(userName);
           history.push({
-            pathname: "/rooms",
+            pathname: "/",
             state: {
               userName: userName,
             },

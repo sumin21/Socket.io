@@ -9,7 +9,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const {auth} = require("./middleware/auth");
 const {creatUser, loginUser, authUser, logoutUser} = require('./controller/user');
-const {creatRoom, showRooms, joinRoom, memberAuth, leaveRoom, showMembers, sendMsg, getMsg} = require('./controller/socket');
+const {creatRoom, showRooms, joinRoom, memberAuth, leaveRoom, showMembers, sendMsg, getMsg, getRoomId} = require('./controller/socket');
 
 const mysql = require('mysql');
 
@@ -34,10 +34,10 @@ io.on("connection", (socket) => {
   // console.log('namespace1 room', socket.rooms);
 
   // 방 나감 (방번호, 이름) 0/1
-  socket.on('leaveRoom', (roomId) => {
-    console.log('leave', roomId);
+  socket.on('leaveRoom', (roomId, userId) => {
+    console.log('leave', roomId, userId);
+    io.to(roomId).emit('leaveRoom', roomId, userId);
     socket.leave(roomId);
-    io.to(roomId).emit('leaveRoom', roomId);
   });
 
   socket.on('joinRoom', (roomId, userId) => {
@@ -49,6 +49,8 @@ io.on("connection", (socket) => {
 
   socket.on('message', (roomId, userId, msg) => {
     console.log(userId, msg);
+    console.log(userId);
+    console.log(msg);
     io.to(roomId).emit('send message', userId, msg);
   });
 
@@ -125,6 +127,9 @@ app.post('/api/sockets/sendmsg',auth, sendMsg);
 
 //getMsg route
 app.post('/api/sockets/getmsg',auth, getMsg);
+
+//getRoomId route
+app.get('/api/sockets/getroomid',auth, getRoomId);
 
 
 httpServer.listen(5000);

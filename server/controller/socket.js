@@ -228,6 +228,33 @@ module.exports = {
             }
         });
     },
+    //get
+    getRoomId: (req, res) =>{
+        //(auth)userId -> (server) 해당 유저가 참여중인 roomId 전달
+        console.log("🚀 ~ req.body", req.body)
+        let userId = req.user.id;
+        const param = [userId];
+        mql.query('SELECT * FROM members WHERE userId=?', param[0], (err,row) => {
+            if(err) return res.json({
+                success: false,
+                error: err
+            });
+            else if (row.length == 0) return res.json({
+                success: false,
+                error: '해당 user가 참여중인 채팅방이 존재하지 않습니다.'
+            });
+            else if (row.length > 1) return res.json({
+                success: false,
+                error: '해당 user가 참여중인 채팅방이 여러개입니다.'
+            });
+            else{
+                return res.json({
+                    success: true,
+                    roomId: row[0]['chatroomsId']
+                });
+            }
+        });
+    },
     //post
     sendMsg: (req, res) =>{
         //(cliend) roomId, msg -> (server) msg table에 저장

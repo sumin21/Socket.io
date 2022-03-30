@@ -64,10 +64,25 @@ const Room = (props: any) => {
   const history = useHistory();
 
   const roomClickHandler = (event: any) => {
-    //modal 창 띄우기 (디벨롭시)
+    //modal 창 띄우기 (디벨롭)
     //event = roomId
     console.log(event);
-    history.push(`/room?id=${event}`);
+    const body = {
+      roomId: event,
+    };
+
+    Axios.post(`/api/sockets/joinroom`, body)
+      .then((response) => {
+        if (response.data.success) {
+          history.push(`/room?id=${event}`);
+        } else {
+          alert("채팅방 참여에 실패했습니다.");
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+        return;
+      });
   };
 
   return (

@@ -298,14 +298,20 @@ const Rooms = (props: any) => {
   };
 
   const onLogoutClickHandler = () => {
-    axios.get(`/api/users/logout`).then((response) => {
-      if (response.data.success) {
-        // socket.emit("leaveRoom", 0, userName);
-        history.push("/login");
-      } else {
-        alert("로그아웃 하는데 실패 했습니다.");
-      }
-    });
+    axios
+      .get(`/api/users/logout`)
+      .then((response) => {
+        if (response.data.success) {
+          // socket.emit("leaveRoom", 0, userName);
+          history.push("/login");
+        } else {
+          alert("로그아웃 하는데 실패 했습니다.");
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+        return;
+      });
   };
 
   return (
@@ -414,6 +420,3 @@ const Rooms = (props: any) => {
   );
 };
 export default Rooms;
-function getPromise() {
-  throw new Error("Function not implemented.");
-}

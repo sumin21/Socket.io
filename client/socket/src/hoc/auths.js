@@ -12,33 +12,15 @@ import { useHistory } from 'react-router-dom';
 // import { useDispatch } from 'react-redux';
 // import { auth } from '../_actions/user_action';
 
-function SocketAuth(SpecificComponent, option) {
-    const history = useHistory();
+function Auths(SpecificComponent, option) {
+
     // console.log(SpecificComponent);
     //option:
     //null    =>  아무나 출입이 가능한 페이지
     //true    =>  로그인한 유저만 출입이 가능한 페이지
     //false   =>  로그인한 유저는 출입 불가능한 페이지
     function AuthenticationCheck(props) {
-        console.log((window.location.pathname));
         const NewPage = Auth(SpecificComponent, true);
-        const { search } = props.location;
-        const roomId = search.substr(4);
-        const body = {
-            roomId
-        };
-        console.log(body);
-            Axios.post('/api/sockets/memberauth', body)//
-            .then(function (response) {
-                if(!response.data.success){
-                    console.log('해당 채팅방에 참여중이지 않은 유저는 출입금지');
-                    history.push('/');
-                }
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-        
         return (
                 <NewPage />
                 )
@@ -48,4 +30,4 @@ function SocketAuth(SpecificComponent, option) {
     
 }
 
-export default SocketAuth
+export default Auths
