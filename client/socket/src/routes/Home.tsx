@@ -159,31 +159,77 @@ const Home = (props: any) => {
                 const body = {
                   roomId: roomId,
                 };
-                Axios.post(`/api/sockets/leaveroom`, body)
-                  .then((response) => {
-                    if (response.data.success) {
-                      console.log(response.data.allDelete);
-                      history.push("/");
-                    } else {
-                      alert("방 나가기에 실패했습니다.");
-                    }
-                  })
-                  .catch(function (error) {
-                    console.log(error);
-                    return;
-                  });
+                if (name === userName) {
+                  Axios.post(`/api/sockets/leaveroom`, body)
+                    .then((response) => {
+                      if (response.data.success) {
+                        console.log(response.data.allDelete);
+                        codesHandler(
+                          "joinRoom",
+                          `${name}님이 채팅방을 나가셨습니다.`
+                        );
+                        if (name === userName) {
+                          history.push("/");
+                        }
+                      } else {
+                        alert("방 나가기에 실패했습니다.");
+                      }
+                    })
+                    .catch(function (error) {
+                      console.log(error);
+                      return;
+                    });
+                } else {
+                  codesHandler(
+                    "joinRoom",
+                    `${name}님이 채팅방을 나가셨습니다.`
+                  );
+                }
               });
 
               //joinRoom
               socket.on("joinRoom", (num: number, name: string) => {
                 console.log(`joinRoom!`, num, name);
-                setcodeClassName2("joinRoom");
-                setMessage2(`${name}님이 채팅방에 입장하셨습니다.`);
-                let newCode =
-                  codes +
-                  `<div class='joinRoom'>${name}님이 채팅방에 입장하셨습니다.</div>`;
-                setbol(true);
-                setCodes2(newCode);
+
+                //이전 채팅기록 가져오기
+                const body = {
+                  roomId: roomId,
+                };
+                if (name === userName) {
+                  Axios.post(`/api/sockets/getmsg`, body)
+                    .then((response) => {
+                      if (response.data.success) {
+                        const msgObjs = response.data.result;
+                        console.log(msgObjs);
+
+                        for (let i = 0; i < msgObjs.length; i++) {
+                          const ownerBool = msgObjs[i]["owner"];
+                          const msg = msgObjs[i]["coment"];
+
+                          let codeClassName: string = "";
+                          if (ownerBool) {
+                            codeClassName = "senderChat";
+                          } else {
+                            codeClassName = "receiverChat";
+                          }
+                          codesHandler(codeClassName, msg);
+                        }
+                        codesHandler(
+                          "joinRoom",
+                          `${name}님이 채팅방에 입장하셨습니다.`
+                        );
+                      }
+                    })
+                    .catch(function (error) {
+                      console.log(error);
+                      return;
+                    });
+                } else {
+                  codesHandler(
+                    "joinRoom",
+                    `${name}님이 채팅방에 입장하셨습니다.`
+                  );
+                }
               });
 
               //send message
@@ -257,6 +303,21 @@ const Home = (props: any) => {
     if (message.content != "") {
       console.log("msg 전달");
       socket.emit("message", axiosRoomId, axiosUserName, message);
+
+      const body = {
+        roomId: axiosRoomId,
+        msg: message.content,
+      };
+      Axios.post(`/api/sockets/sendmsg`, body)
+        .then((response) => {
+          if (!response.data.success) {
+            alert(response.data.error);
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+          return;
+        });
 
       setContent("");
     }

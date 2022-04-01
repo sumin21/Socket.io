@@ -187,7 +187,7 @@ module.exports = {
                                         success: false,
                                         error: err
                                     });
-
+                                    //방 삭제하면 채팅도 삭제 (?)
                                     return res.json({
                                         success: true,
                                         allDelete: true
@@ -261,7 +261,7 @@ module.exports = {
         console.log("🚀 ~ req.body", req.body);
         let userId = req.user.id;
         const time = new Date().toISOString().slice(0, 19).replace('T', ' ');
-        const param = [req.body.roomId, userId, req.body.msg];
+        const param = [req.body.roomId, userId, req.body.msg, time];
         //해당 채팅방에 참여 중인지 확인
         mql.query('SELECT * FROM members WHERE chatroomsId=? AND userId=?', [param[0], param[1]], (err,row) => {
             if(err) return res.json({
@@ -271,7 +271,7 @@ module.exports = {
 
             //참여 중
             else if (row.length > 0){
-                mql.query('INSERT INTO messages(`chatroomsId`, `userId`, `coment`) VALUES (?,?,?)', param, (err,row) => {
+                mql.query('INSERT INTO messages(`chatroomsId`, `userId`, `coment`, `sendTime`) VALUES (?,?,?,?)', param, (err,row) => {
                     if(err) return res.json({
                         success: false,
                         error: err

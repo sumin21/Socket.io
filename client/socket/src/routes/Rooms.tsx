@@ -129,6 +129,12 @@ const LogoutBox = styled.div`
   flex-direction: row-reverse;
 `;
 
+const NoRooms = styled.div`
+  font-size: small;
+  font-weight: bold;
+  color: #e59999;
+`;
+
 const RoomCss = styled.div`
   /* color: white; */
   background-color: #f1e0e0;
@@ -182,52 +188,59 @@ const Rooms = (props: any) => {
     rooms: Array<Roomtype>,
     setRooms: (x: any) => void
   ] = useState([]);
-  const [countList, setCountList] = useState([0]);
-  const [newRooms, setNewRooms]: [
-    rooms: Array<Roomtype>,
-    setRooms: (x: any) => void
-  ] = useState([]);
+
   const [useEffectBool, setUseEffectBool] = useState(true);
+
   useEffect(() => {
     console.log("rooms 접속");
 
-    // 로그인 안된 유저는 요청 못보내게 막아야 하나?
-    Axios.get("/api/sockets/showrooms") //
+    Axios.get("/api/users/auth") //
       .then(function (response) {
-        if (response.data.success) {
-          console.log("showrooms result:", response.data.results);
-          //rooms component 생성
-          let result = response.data.results;
-          //newRooms: promise 객체
-          const newRoomsFunc = async () => {
-            const newRooms = result.map(async (row: Roomtype) => {
-              let body = {
-                roomId: row.id,
-              };
-              const newRoom = await Axios.post("/api/sockets/showmembers", body) //
-                .then(function (response) {
-                  const newRow = {
-                    ...row,
-                    memberLength: response.data.memberLength,
-                  };
-                  return newRow;
-                })
-                .catch(function (error) {
-                  console.log(error);
-                  return;
-                });
-              return newRoom;
+        console.log(response.data.isAuth);
+        //로그인 한 상태
+        if (response.data.isAuth) {
+          // 로그인 안된 유저는 요청 못보내게 막아야 하나?
+          Axios.get("/api/sockets/showrooms") //
+            .then(function (response) {
+              if (response.data.success) {
+                console.log("showrooms result:", response.data.results);
+                //rooms component 생성
+                let result = response.data.results;
+                //newRooms: promise 객체
+                const newRoomsFunc = async () => {
+                  const newRooms = result.map(async (row: Roomtype) => {
+                    let body = {
+                      roomId: row.id,
+                    };
+                    const newRoom = await Axios.post(
+                      "/api/sockets/showmembers",
+                      body
+                    ) //
+                      .then(function (response) {
+                        const newRow = {
+                          ...row,
+                          memberLength: response.data.memberLength,
+                        };
+                        return newRow;
+                      })
+                      .catch(function (error) {
+                        console.log(error);
+                        return;
+                      });
+                    return newRoom;
+                  });
+                  const newRoomsPromise = await Promise.all(newRooms);
+                  console.log(newRoomsPromise); //
+                  setRooms(newRoomsPromise);
+                  console.log("rooms", rooms);
+                };
+                newRoomsFunc();
+              }
+            })
+            .catch(function (error) {
+              console.log(error);
             });
-            const newRoomsPromise = await Promise.all(newRooms);
-            console.log(newRoomsPromise); //
-            setRooms(newRoomsPromise);
-            console.log("rooms", rooms);
-          };
-          newRoomsFunc();
         }
-      })
-      .catch(function (error) {
-        console.log(error);
       });
   }, [useEffectBool]);
 
@@ -413,7 +426,11 @@ const Rooms = (props: any) => {
       <HrCss />
       <ChatRoomsContainer>
         <ChatRooms>
-          <Room rooms={rooms} />
+          {rooms.length === 0 ? (
+            <NoRooms>아직 개설된 채팅방이 없습니다.</NoRooms>
+          ) : (
+            <Room rooms={rooms} />
+          )}
         </ChatRooms>
       </ChatRoomsContainer>
     </RoomsCss>

@@ -2,7 +2,6 @@ import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 import styled, { createGlobalStyle } from "styled-components";
 
 import Auth from "./hoc/auth";
-import Auths from "./hoc/auths";
 import Home from "./routes/Home";
 import Login from "./routes/Login";
 import Rooms from "./routes/Rooms";
@@ -104,8 +103,8 @@ const ChatTitle = styled.h1`
 
 const App: React.FC = () => {
   // const newHomePage = Auth(Home, true);
-  const newLoginPage = Auths(Login, false);
-  const newRoomsPage = Auths(Rooms, true);
+  const newLoginPage = Auth(Login, false);
+  const newRoomsPage = Auth(Rooms, true);
   const newHomePage = SocketAuth(Home, true);
 
   return (
