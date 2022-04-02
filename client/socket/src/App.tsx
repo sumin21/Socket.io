@@ -34,9 +34,16 @@ time, mark, audio, video {
 a{
   text-decoration:none !important;
 }
+.btn-primary {
+    color: #fff;
+    background-color: #e47d7d;
+    border-color: #e47d7d;
+}
+
+
 .dropdown-toggle{
   width: 100%;
-  background-color: #e59999;
+  background-color: #e47d7d;
   border: 0;
 }
 .show>.btn-primary.dropdown-toggle {
@@ -48,17 +55,21 @@ a{
     color: #fff;
     background-color: #e59999;
     border-color: #e59999;
-    box-shadow: 0 0 0 0.25rem rgb(49 132 253 / 50%);
+    box-shadow: 0 0 0 0.25rem #e47d7d;
 }
 .btn-primary:hover {
     color: #fff;
     background-color: #e59999;
     border-color: #e59999;
-    box-shadow: 0 0 0 0.25rem rgb(49 132 253 / 50%);
+    box-shadow: 0 0 0 0.25rem #e47d7d;
 }
 .dropdown-menu{
   max-height: 150px;
   overflow-y: scroll;
+}
+
+.show>.btn-primary.dropdown-toggle:focus {
+    box-shadow: 0 0 0 0.25rem #e47d7d;
 }
 `;
 

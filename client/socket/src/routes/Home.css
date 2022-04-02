@@ -1,20 +1,59 @@
+.rightChat{
+    text-align: right;
+    padding-right: 1rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+}
+
+.leftChat{
+    text-align: left;
+    padding-left: 1rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+}
+
 .senderChat{
     color:  white;
     text-align: right;
-    padding-right: 2rem;
-    padding-top: 0.3rem;
-    padding-bottom: 0.3rem;
+    word-break:break-all;
+    max-width: 200px;
+    display: inline-block;
+    background-color: #e59999;
+    border-radius: 10px;
+    padding: 5px 10px;
 }
 .receiverChat{
     color:  black;
     text-align: left;
-    padding-left: 2rem;
-    padding-top: 0.3rem;
-    padding-bottom: 0.3rem;
+    word-break:break-all;
+    max-width: 200px;
+    display: inline-block;
+    background-color: #f8e6e6;
+    border-radius: 10px;
+    padding: 5px 10px;
 }
+
 .joinRoom{
     font-size: 12px;
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
     color: rgb(124, 106, 106);
+}
+
+.chatTimeRight{
+    color: grey;
+    font-size: 9px;
+    text-align: right;
+    padding-right: 0.7rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+}
+
+.chatTimeLeft{
+    color: grey;
+    font-size: 9px;
+    text-align: left;
+    padding-left: 0.7rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
 }

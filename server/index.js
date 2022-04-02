@@ -34,16 +34,16 @@ io.on("connection", (socket) => {
   // console.log('namespace1 room', socket.rooms);
 
   // 방 나감 (방번호, 이름) 0/1
-  socket.on('leaveRoom', (roomId, userId) => {
-    console.log('leave', roomId, userId);
-    io.to(roomId).emit('leaveRoom', roomId, userId);
+  socket.on('leaveRoom', (roomId, userName, userLocation, userSex, userAge) => {
+    console.log('leave', roomId, userName);
+    io.to(roomId).emit('leaveRoom', roomId, userName, userLocation, userSex, userAge);
     socket.leave(roomId);
   });
 
-  socket.on('joinRoom', (roomId, userId) => {
-    console.log('join', roomId, userId);
+  socket.on('joinRoom', (roomId, userName, userLocation, userSex, userAge) => {
+    console.log('join', roomId, userName);
     socket.join(roomId);
-    io.to(roomId).emit('joinRoom', roomId, userId);
+    io.to(roomId).emit('joinRoom', roomId, userName, userLocation, userSex, userAge);
   });
 
 

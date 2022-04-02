@@ -211,7 +211,7 @@ module.exports = {
         //(cliend) roomId -> (server) 해당 room에 참여중인 인원 전달
         console.log("🚀 ~ req.body", req.body)
         const param = [req.body.roomId]
-        mql.query('SELECT * FROM members WHERE chatroomsId=?', param[0], (err,row) => {
+        mql.query('SELECT users.name, users.location, users.sex, users.age FROM members, users WHERE members.chatroomsId=? AND members.userId = users.id', param[0], (err,row) => {
             if(err) return res.json({
                 success: false,
                 error: err
@@ -223,6 +223,7 @@ module.exports = {
             else{
                 return res.json({
                     success: true,
+                    members: row,
                     memberLength: row.length
                 });
             }
@@ -260,8 +261,8 @@ module.exports = {
         //(cliend) roomId, msg -> (server) msg table에 저장
         console.log("🚀 ~ req.body", req.body);
         let userId = req.user.id;
-        const time = new Date().toISOString().slice(0, 19).replace('T', ' ');
-        const param = [req.body.roomId, userId, req.body.msg, time];
+        // const time = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const param = [req.body.roomId, userId, req.body.msg, req.body.time];
         //해당 채팅방에 참여 중인지 확인
         mql.query('SELECT * FROM members WHERE chatroomsId=? AND userId=?', [param[0], param[1]], (err,row) => {
             if(err) return res.json({
@@ -278,7 +279,7 @@ module.exports = {
                     });
                     else{
                         const rowId = row.insertId;
-                        mql.query('UPDATE chatrooms SET lastChatTime=? WHERE id=?', [time, param[0]], (err,row) => {
+                        mql.query('UPDATE chatrooms SET lastChatTime=? WHERE id=?', [req.body.time, param[0]], (err,row) => {
                             if(err) {
                                 mql.query('DELETE FROM messages WHERE id=?', rowId, (err,row) => {
                                     if(err) return res.json({
@@ -323,7 +324,7 @@ module.exports = {
             });
             //room 존재
             else if (row.length > 0){
-                mql.query('SELECT * FROM messages WHERE chatroomsId=?', param[0], (err,row) => {
+                mql.query('SELECT * FROM messages WHERE chatroomsId=? ORDER BY sendTime', param[0], (err,row) => {
                     if(err) return res.json({
                         success: false,
                         error: err

@@ -9,13 +9,13 @@ module.exports = {
         //회원가입 할때 필요한 정보들을 client에서 가져오면
         //그것들을 데이터 베이스에 넣어준다.
         console.log("🚀 ~ req.body", req.body)
-        const param = [req.body.name, req.body.password]
+        const param = [req.body.name, req.body.password, req.body.location, req.body.sex, req.body.age]
 
         // 회원가입 시 비밀번호 
         bcrypt.hash(param[1], saltRounds, (error, hash)=>{
             param[1] = hash
             console.log(param)
-            mql.query('INSERT INTO users(`name`, `password`) VALUES (?,?)', param, (err, row) => {
+            mql.query('INSERT INTO users(`name`, `password`, `location`, `sex`, `age`) VALUES (?,?,?,?,?)', param, (err, row) => {
                 if(err) return res.json({success: false, err})
                 return res.json({success: true})
             })
@@ -77,6 +77,9 @@ module.exports = {
         res.status(200).json({
             id: user.id,
             name: user.name,
+            location: user.location,
+            sex: user.sex,
+            age: user.age,
             isAuth: true
         });
     },
