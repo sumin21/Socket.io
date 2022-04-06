@@ -324,7 +324,7 @@ module.exports = {
             });
             //room 존재
             else if (row.length > 0){
-                mql.query('SELECT * FROM messages WHERE chatroomsId=? ORDER BY sendTime', param[0], (err,row) => {
+                mql.query('SELECT userId, coment, sendTime, name FROM messages, users WHERE messages.chatroomsId=? and messages.userId = users.id ORDER BY sendTime', param[0], (err,row) => {
                     if(err) return res.json({
                         success: false,
                         error: err

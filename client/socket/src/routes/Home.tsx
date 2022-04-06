@@ -76,6 +76,33 @@ const ChatMembers = styled.div`
   background-color: #ebc6c7;
   border-radius: 10px;
   margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  flex-basis: 100px; //item너비
+  padding-top: 5px;
+`;
+
+const ChatMember = styled.div`
+  display: flex;
+  margin-right: 10px;
+  background-color: #e6b2b4;
+  margin-bottom: 5px;
+  border-radius: 10px;
+  padding: 3px 5px;
+`;
+
+const ChatMemberInfor = styled.div`
+  color: grey;
+  font-size: 9px;
+  margin-left: 5px;
+  margin-top: 3px;
+`;
+
+const ChatMemberName = styled.div`
+  /* color: grey; */
+  font-size: 15px;
+  color: #664141;
 `;
 
 const Chat = styled.div`
@@ -98,10 +125,10 @@ const ChatStart = styled.div`
 let socket: any = null;
 
 type Membertype = {
-  name: string;
-  location: string;
-  sex: string;
-  age: number;
+  name?: string;
+  location?: string;
+  sex?: string;
+  age?: number;
 };
 
 const Home = (props: any) => {
@@ -121,17 +148,31 @@ const Home = (props: any) => {
   const [codeClassName2, setcodeClassName2] = useState("");
   const [message2, setMessage2] = useState("");
   const [chatTime2, setChatTime2] = useState("");
+  const [chatUser2, setChatUser2] = useState("");
+
+  const [bolMember, setbolMember] = useState(true);
+  const [chatMembers2, setChatMembers2]: [
+    chatMembers2: Array<Membertype>,
+    setChatMembers2: (x: any) => void
+  ] = useState([]);
 
   const [chatMembers, setChatMembers]: [
     chatMembers: Array<Membertype>,
     setChatMembers: (x: any) => void
   ] = useState([]);
 
-  const tlqkf = ["dd", "ddd"];
-  const codesHandler = (codeClassName: string, message: string, time?: any) => {
+  const codesHandler = (
+    codeClassName: string,
+    message: string,
+    user?: string,
+    time?: any
+  ) => {
     console.log("codesss");
     console.log(codes); //
     let newCode = codes + `<div class=${codeClassName}>${message}</div>`;
+    if (user) {
+      setChatUser2(user);
+    }
     if (time) {
       time = time.slice(0, 16).replace("T", " ");
       newCode = `<div class="chatTime">${time}</div>` + newCode;
@@ -145,6 +186,14 @@ const Home = (props: any) => {
     setCodes(newCode);
     console.log(codes);
   };
+
+  const memberHandler = (member: Array<Membertype>) => {
+    setChatMembers(member);
+    // console.log(chatMembers);
+    setbolMember(true);
+    setChatMembers2(member);
+  };
+
   // const location = useLocation<any>();
   // const userN = location.state.userName;
 
@@ -204,7 +253,8 @@ const Home = (props: any) => {
                   name: string,
                   location: string,
                   sex: string,
-                  age: number
+                  age: number,
+                  members: Array<Membertype>
                 ) => {
                   console.log(`leaveRoom!`, num, name, location, sex, age);
                   const body = {
@@ -230,14 +280,9 @@ const Home = (props: any) => {
                   }
                   //타인인 경우
                   else {
-                    let leaveUser: Array<Membertype> = chatMembers.filter(
-                      function (user) {
-                        return user.name !== name;
-                      }
-                    );
-                    console.log(leaveUser);
-                    setChatMembers(leaveUser);
-                    console.log("kk", chatMembers);
+                    console.log("tq", members);
+                    memberHandler(members);
+                    // console.log("kk", chatMembers);
                     codesHandler(
                       "joinRoom",
                       `${name}님이 채팅방을 나가셨습니다.`
@@ -254,7 +299,9 @@ const Home = (props: any) => {
                   name: string,
                   location: string,
                   sex: string,
-                  age: number
+                  age: number,
+                  members: Array<Membertype>,
+                  replay: boolean
                 ) => {
                   console.log(`joinRoom!`, num, name);
 
@@ -299,6 +346,7 @@ const Home = (props: any) => {
                                   const ownerBool = msgObjs[i]["owner"];
                                   const msg = msgObjs[i]["coment"];
                                   const msgTime = msgObjs[i]["sendTime"];
+                                  const msgName = msgObjs[i]["name"];
 
                                   let codeClassName: string = "";
                                   if (ownerBool) {
@@ -306,7 +354,12 @@ const Home = (props: any) => {
                                   } else {
                                     codeClassName = "receiverChat";
                                   }
-                                  codesHandler(codeClassName, msg, msgTime);
+                                  codesHandler(
+                                    codeClassName,
+                                    msg,
+                                    msgName,
+                                    msgTime
+                                  );
                                 }
                                 codesHandler(
                                   "joinRoom",
@@ -325,20 +378,11 @@ const Home = (props: any) => {
                         return;
                       });
                   } else {
-                    let overLapUser = chatMembers.filter(function (user) {
-                      return user["name"] === name;
-                    });
+                    console.log("tq", members);
+                    console.log("다른 사람 입장");
 
-                    //중복 유저 없다면
-                    if (overLapUser.length === 0) {
-                      let newMembers = chatMembers.push({
-                        name: name,
-                        location: location,
-                        sex: sex,
-                        age: age,
-                      });
-
-                      setChatMembers(chatMembers);
+                    if (!replay) {
+                      memberHandler(members);
                       console.log("kk", chatMembers);
                       codesHandler(
                         "joinRoom",
@@ -363,12 +407,17 @@ const Home = (props: any) => {
                     time: msg.time,
                   };
                   let codeClassName: string = "";
-                  if (messages.sender == socket.id) {
+                  if (messages.sender === socket.id) {
                     codeClassName = "senderChat";
                   } else {
                     codeClassName = "receiverChat";
                   }
-                  codesHandler(codeClassName, messages.message, messages.time);
+                  codesHandler(
+                    codeClassName,
+                    messages.message,
+                    name,
+                    messages.time
+                  );
                   setContent("");
                 }
               );
@@ -390,15 +439,18 @@ const Home = (props: any) => {
   useEffect(() => {
     if (bol) {
       console.log(codes, "///"); //
+      console.log(chatUser2, "///"); //
+      let userName = chatUser2;
+
       let newCode = "";
       if (codeClassName2 === "senderChat") {
         newCode =
           codes +
-          `<div class="rightChat"><span class="chatTimeRight">${chatTime2}</span><span class=${codeClassName2}>${message2}</span></div>`;
+          `<div class="rightChat"><div class="userName">${userName}</div><span class="chatTimeRight">${chatTime2}</span><span class=${codeClassName2}>${message2}</span></div>`;
       } else if (codeClassName2 === "receiverChat") {
         newCode =
           codes +
-          `<div class="leftChat"><span class=${codeClassName2}>${message2}</span><span class="chatTimeLeft">${chatTime2}</span></div>`;
+          `<div class="leftChat"><div class="userName">${userName}</div><span class=${codeClassName2}>${message2}</span><span class="chatTimeLeft">${chatTime2}</span></div>`;
       } else {
         newCode = codes + `<div class=${codeClassName2}>${message2}</div>`;
       }
@@ -410,6 +462,20 @@ const Home = (props: any) => {
       setCodes2("");
     };
   }, [codes2]);
+
+  useEffect(() => {
+    console.log("zzz");
+    if (bolMember) {
+      console.log(chatMembers2, "///"); //
+      setChatMembers(chatMembers2);
+      console.log(chatMembers, "///2"); //
+      // setCodes2(newCode);
+    }
+    return () => {
+      setbolMember(false);
+      // setChatMembers2([]);
+    };
+  }, [chatMembers2]);
 
   // const [chatStartTxt, setchatStartTxt] = useState("채팅 시작하기");
 
@@ -494,12 +560,19 @@ const Home = (props: any) => {
       </ChatInputs>
 
       <HrCss />
-      <div>
+      <ChatMembers>
         {chatMembers.length &&
           chatMembers.map((member: Membertype) => (
-            <div key={member["name"]}>{member["name"]}</div>
+            <ChatMember key={member["name"] + "member"}>
+              <ChatMemberName key={member["name"] + "memberName"}>
+                {member["name"]}
+              </ChatMemberName>
+              <ChatMemberInfor key={member["name"] + "memberInfor"}>
+                {member["location"]}/{member["sex"]}/{member["age"]}
+              </ChatMemberInfor>
+            </ChatMember>
           ))}
-      </div>
+      </ChatMembers>
       <Chat>
         <div
           className="chats"
