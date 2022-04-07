@@ -194,12 +194,21 @@ const Home = (props: any) => {
     setChatMembers2(member);
   };
 
-  // const location = useLocation<any>();
+  const location = useLocation<any>();
   // const userN = location.state.userName;
 
   // 빈배열 넣음으로 -> 새로고침 시에만 재적용
   useEffect(() => {
     console.log("room 접속!!!");
+    // const preventGoBack = () => {
+    //   // change start
+    //   history.pushState(null, '', location.href);
+    //   // change end
+    //   console.log('prevent go back!');
+    // };
+
+    // history.pushState(null, '', location.href);
+    // window.addEventListener('popstate', preventGoBack);
 
     //auth 안거쳐도 되는지 확인(ㅇㅇ...-> 버그 수정)
 
@@ -434,6 +443,7 @@ const Home = (props: any) => {
         console.log(error);
         return;
       });
+    // return () => window.removeEventListener('popstate', preventGoBack);
   }, []);
 
   useEffect(() => {
