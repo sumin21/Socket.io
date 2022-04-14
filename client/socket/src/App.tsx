@@ -4,6 +4,7 @@ import styled, { createGlobalStyle } from "styled-components";
 import Auth from "./hoc/auth";
 import Home from "./routes/Home";
 import Login from "./routes/Login";
+import NotFound from "./routes/NotFound";
 import Rooms from "./routes/Rooms";
 import SocketAuth from "./hoc/socketAuth";
 
@@ -131,6 +132,7 @@ const App: React.FC = () => {
                   <Route exact path="/room" component={newHomePage} />
                   <Route exact path="/login" component={newLoginPage} />
                   <Route exact path="/" component={newRoomsPage} />
+                  <Route path="*" component={NotFound} />
                 </Switch>
               </MyForm>
             </div>
