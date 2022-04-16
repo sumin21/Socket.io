@@ -12,7 +12,7 @@ import { useHistory } from 'react-router-dom';
 // import { useDispatch } from 'react-redux';
 // import { auth } from '../_actions/user_action';
 
-function SocketAuth(SpecificComponent, option) {
+function SocketAuth(SpecificComponent) {
     const history = useHistory();
     // console.log(SpecificComponent);
     //option:

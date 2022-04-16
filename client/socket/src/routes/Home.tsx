@@ -1,8 +1,14 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Home.css";
 
+import {
+  Prompt,
+  Route,
+  Switch,
+  useHistory,
+  useLocation,
+} from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import { Route, Switch, useHistory, useLocation } from "react-router-dom";
 
 import Axios from "axios";
 import Button from "react-bootstrap/Button";
@@ -196,6 +202,23 @@ const Home = (props: any) => {
 
   const location = useLocation<any>();
   // const userN = location.state.userName;
+
+  const [isBlocking, setIsBlocking] = useState(false);
+
+  //뒤로가기 막기
+  useEffect(() => {
+    //뒤로가기 막기
+    console.log(history);
+    // if (history.action === "POP") {
+    const unblock = history.block("채팅방을 나가시겠습니까?");
+    return () => {
+      unblock();
+    };
+  }, [history]);
+
+  // useEffect(() => {
+  //   info && setIsBlocking(true)
+  // }, [info])
 
   // 빈배열 넣음으로 -> 새로고침 시에만 재적용
   useEffect(() => {
@@ -431,7 +454,7 @@ const Home = (props: any) => {
                 }
               );
             } else {
-              alert("해당 유저가 참여중인 room을 찾지 못했습니다.");
+              alert("해당 room에 참여할 수 없습니다.");
             }
           })
           .catch(function (error) {
@@ -548,6 +571,7 @@ const Home = (props: any) => {
 
   return (
     <div>
+      <Prompt when={true} message="채팅방을 나가시겠습니까?" />
       <ChatStart onClick={endClickHandler}>채팅 그만하기</ChatStart>
       <ChatInputs>
         <ChatInputBox

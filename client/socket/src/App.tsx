@@ -117,7 +117,7 @@ const App: React.FC = () => {
   // const newHomePage = Auth(Home, true);
   const newLoginPage = Auth(Login, false);
   const newRoomsPage = Auth(Rooms, true);
-  const newHomePage = SocketAuth(Home, true);
+  const newHomePage = SocketAuth(Home);
 
   return (
     <>
