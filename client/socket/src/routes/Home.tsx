@@ -200,21 +200,31 @@ const Home = (props: any) => {
     setChatMembers2(member);
   };
 
-  const location = useLocation<any>();
-  // const userN = location.state.userName;
-
-  const [isBlocking, setIsBlocking] = useState(false);
+  const nowLocation = window.location.pathname;
 
   //뒤로가기 막기
-  useEffect(() => {
-    //뒤로가기 막기
-    console.log(history);
-    // if (history.action === "POP") {
-    const unblock = history.block("채팅방을 나가시겠습니까?");
-    return () => {
-      unblock();
-    };
-  }, [history]);
+  // useEffect(() => {
+  //   //뒤로가기 막기
+  //   console.log(history);
+  //   if (history.action === "POP") {
+  //     // const unblock = history.block("채팅방을 나가시겠습니까?");
+  //     console.log("나감");
+  //     console.log(nowLocation);
+  //     // history.push("/detail");
+  //   }
+  // }, [history]);
+
+  // useEffect(() => {
+  //   let unlisten = history.listen((location) => {
+  //     if (history.action === "POP") {
+  //       console.log("나감");
+  //     }
+  //   });
+
+  //   return () => {
+  //     unlisten();
+  //   };
+  // }, [history]);
 
   // useEffect(() => {
   //   info && setIsBlocking(true)
@@ -571,7 +581,17 @@ const Home = (props: any) => {
 
   return (
     <div>
-      <Prompt when={true} message="채팅방을 나가시겠습니까?" />
+      <Prompt
+        message={(location, action) => {
+          if (action === "POP") {
+            console.log("Backing up...");
+            console.log("나감");
+            endClickHandler();
+          }
+
+          return true;
+        }}
+      />
       <ChatStart onClick={endClickHandler}>채팅 그만하기</ChatStart>
       <ChatInputs>
         <ChatInputBox
