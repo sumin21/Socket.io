@@ -4,8 +4,6 @@ import { Dropdown, DropdownButton } from "react-bootstrap";
 import React, { useState } from "react";
 
 import Axios from "axios";
-import { createGlobalStyle } from "styled-components";
-import { io } from "socket.io-client";
 import styled from "styled-components";
 import { useHistory } from "react-router-dom";
 
@@ -88,7 +86,6 @@ const RegisterBtn = styled.button`
 const LoginOr = styled.div`
   position: relative;
   color: white;
-  /* height: 3px; */
   margin-top: 10px;
   margin-bottom: 10px;
   padding-top: 10px;
@@ -124,23 +121,16 @@ const FlexBetween = styled.div`
 `;
 
 const RegisterLocationInputBox = styled.div`
-  //padding: 2rem;
-  /* display: inline-block; */
   min-width: 300px;
-  /* max-width: 160px; */
   margin-bottom: 2rem;
 `;
 
 const RegisterSexInputBox = styled.div`
-  //padding: 2rem;
-  /* display: inline-block; */
   min-width: 130px;
   max-width: 140px;
 `;
 
 const RegisterAgeInputBox = styled.div`
-  //padding: 2rem;
-  /* display: inline-block; */
   min-width: 130px;
   max-width: 140px;
 `;
@@ -228,14 +218,6 @@ const Login = () => {
   };
 
   const registerBtnClick = (event: any) => {
-    // const body = {
-    //   name: registerName,
-    //   password: registerPassword,
-    //   location: registerLocation,
-    //   sex: registerSex,
-    //   age: registerAge,
-    // };
-
     //변경 없이 submit 클릭 -> 리로드 x
     event.preventDefault();
 

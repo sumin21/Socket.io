@@ -1,58 +1,13 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Home.css";
 
-import {
-  Prompt,
-  Route,
-  Switch,
-  useHistory,
-  useLocation,
-} from "react-router-dom";
+import { Prompt, useHistory } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 
 import Axios from "axios";
-import Button from "react-bootstrap/Button";
-import Rooms from "./Rooms";
+
 import { io } from "socket.io-client";
 import styled from "styled-components";
-
-const LoginCss = styled.div`
-  width: 100%;
-  height: 100%;
-  padding-top: 4.2rem;
-  padding-bottom: 4.2rem;
-  /* background-image: url('../../../../images/loginpageimg.png'); */
-  background-repeat: no-repeat;
-  background-size: cover;
-`;
-
-const LoginMargin = styled.div`
-  margin-top: 4.2rem;
-`;
-
-const MyForm = styled.div`
-  position: relative;
-  display: -ms-flexbox;
-  display: flex;
-  padding: 3rem;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  width: 100%;
-  pointer-events: auto;
-  background-clip: padding-box;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  outline: 0;
-  /* max-width: 600px; */
-  min-width: 300px;
-  background-color: #e59999;
-  text-align: center;
-`;
-
-const ChatTitle = styled.h1`
-  font-weight: 900;
-  color: white;
-  margin-bottom: 2rem;
-`;
 
 const ChatInputBox = styled.input`
   margin-right: 1rem;
@@ -200,50 +155,9 @@ const Home = (props: any) => {
     setChatMembers2(member);
   };
 
-  const nowLocation = window.location.pathname;
-
-  //뒤로가기 막기
-  // useEffect(() => {
-  //   //뒤로가기 막기
-  //   console.log(history);
-  //   if (history.action === "POP") {
-  //     // const unblock = history.block("채팅방을 나가시겠습니까?");
-  //     console.log("나감");
-  //     console.log(nowLocation);
-  //     // history.push("/detail");
-  //   }
-  // }, [history]);
-
-  // useEffect(() => {
-  //   let unlisten = history.listen((location) => {
-  //     if (history.action === "POP") {
-  //       console.log("나감");
-  //     }
-  //   });
-
-  //   return () => {
-  //     unlisten();
-  //   };
-  // }, [history]);
-
-  // useEffect(() => {
-  //   info && setIsBlocking(true)
-  // }, [info])
-
   // 빈배열 넣음으로 -> 새로고침 시에만 재적용
   useEffect(() => {
     console.log("room 접속!!!");
-    // const preventGoBack = () => {
-    //   // change start
-    //   history.pushState(null, '', location.href);
-    //   // change end
-    //   console.log('prevent go back!');
-    // };
-
-    // history.pushState(null, '', location.href);
-    // window.addEventListener('popstate', preventGoBack);
-
-    //auth 안거쳐도 되는지 확인(ㅇㅇ...-> 버그 수정)
 
     // userName 가져오기
     Axios.get("/api/users/auth") //
@@ -476,7 +390,6 @@ const Home = (props: any) => {
         console.log(error);
         return;
       });
-    // return () => window.removeEventListener('popstate', preventGoBack);
   }, []);
 
   useEffect(() => {

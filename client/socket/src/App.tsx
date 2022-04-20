@@ -79,7 +79,6 @@ const LoginCss = styled.div`
   height: 100%;
   padding-top: 4.2rem;
   padding-bottom: 4.2rem;
-  /* background-image: url('../../../../images/loginpageimg.png'); */
   background-repeat: no-repeat;
   background-size: cover;
 `;
@@ -114,7 +113,6 @@ const ChatTitle = styled.h1`
 `;
 
 const App: React.FC = () => {
-  // const newHomePage = Auth(Home, true);
   const newLoginPage = Auth(Login, false);
   const newRoomsPage = Auth(Rooms, true);
   const newHomePage = SocketAuth(Home);
